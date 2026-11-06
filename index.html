@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="author" content="barfly86">
+<meta name="description" content="FM27 tactic generator by barfly86: pick a formation and playing style or your favourite manager and get a complete FM27 tactic with roles, instructions and a ready .fmf file. EN / PL / ES / DE.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2316695e'/%3E%3Crect x='10' y='8' width='44' height='48' rx='3' fill='none' stroke='%232fd3a7' stroke-width='3'/%3E%3Cline x1='10' y1='32' x2='54' y2='32' stroke='%232fd3a7' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='7' fill='none' stroke='%232fd3a7' stroke-width='3'/%3E%3C/svg%3E">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>FM27 Tactic Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: ekran taktyki FM27 — granatowo-fioletowe tło, turkusowe pasy nagłówków, znaczniki zawodników w kolorach linii */
+:root{
+  --bg:#0e0b24; --glow:rgba(110,60,220,.28); --surface:#1a1644; --surface-2:#221c56; --line:#352f70;
+  --band:#16695e; --band-2:#1d8574; --ink:#eef0fa; --muted:#a8abd0;
+  --accent:#2fd3a7; --accent-ink:#052a21; --oop:#f5a524;
+  --warn-bg:#3b2a12; --warn-ink:#ffd27f; --ok-bg:#0f3a31; --ok-ink:#86ecc9; --info-bg:#1f2759; --info-ink:#b3c3ff;
+  --pitch:#1c5b3c; --pitch-2:#195335; --chalk:rgba(255,255,255,.5);
+  --lGK:#5d6b88; --lD:#178f6c; --lM:#2f9a52; --lAM:#7446d6; --lST:#c21f78;
+  --dD:#5b9bff; --dS:#f0d050; --dA:#ff5d73;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:radial-gradient(1100px 520px at 8% -8%,var(--glow),transparent 70%),radial-gradient(900px 500px at 100% 0,rgba(22,105,94,.22),transparent 70%),var(--bg);background-color:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;min-height:100vh;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1260px;margin:0 auto;display:grid;gap:24px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.brand{display:grid;gap:6px;min-width:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(34px,5vw,54px);line-height:1;margin:0;text-wrap:balance;letter-spacing:.01em;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{margin:0;color:var(--muted);max-width:70ch}
+.hdr-right{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end}
+.sig{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 14px 4px 4px;background:var(--surface);cursor:default}
+.sig-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--band-2),#7446d6);font:700 12px var(--f-display);letter-spacing:.04em;color:#fff}
+.sig span{display:grid;line-height:1.1}
+.sig small{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.sig b{font:700 15px var(--f-display);letter-spacing:.04em}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.lang button{font:600 14px var(--f-body);letter-spacing:.04em;border:0;background:transparent;color:var(--muted);padding:8px 13px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--band);color:#fff}
+.lang button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+h2{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0 0 10px;letter-spacing:.04em;text-transform:uppercase;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0}
+
+.grid{display:grid;grid-template-columns:minmax(0,350px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:940px){.grid{grid-template-columns:minmax(0,1fr)}}
+form{display:grid;gap:18px;position:sticky;top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+@media (max-width:940px){form{position:static}}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:8px;min-width:0}
+legend{font-weight:700;font-size:15px;padding:0;margin-bottom:8px;letter-spacing:.02em}
+legend small{font-weight:400;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips label{cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;padding:7px 11px;font-size:14px;line-height:1.2;transition:background .15s,border-color .15s}
+.chips label:hover{border-color:var(--band-2)}
+.chips input:checked+label{background:var(--band);border-color:var(--accent);color:#fff;font-weight:600}
+.chips input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+.chips.big label{padding:9px 13px;font-size:15px}
+.coachbox select{font:600 15px var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--band-2);border-radius:8px;padding:10px 12px;width:100%;cursor:pointer}
+.coachbox select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{margin:0;font-size:13px;color:var(--muted)}
+dt .coach-mark{font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:#c9b6ff;border:1px solid #9b7bff;border-radius:3px;padding:0 4px;margin-left:6px;vertical-align:1px}
+.pis.coach{color:#c9b6ff}
+.adv{border:1px dashed var(--line);border-radius:8px;padding:12px;display:grid;gap:6px;background:var(--bg)}
+.adv label.sw{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:600;font-size:15px}
+.adv input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
+.adv p{margin:0;font-size:13px;color:var(--muted)}
+
+.result{display:grid;gap:22px;min-width:0}
+.headline{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--band),var(--band-2));border-radius:10px;padding:14px 18px;color:#fff}
+.headline .name{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,3.6vw,36px);line-height:1;text-transform:uppercase;letter-spacing:.02em}
+.headline .sub{font-size:14.5px;opacity:.9}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--f-mono);font-size:12px;border:1px solid rgba(255,255,255,.35);border-radius:4px;padding:3px 7px;background:rgba(0,0,0,.18);color:#fff}
+.tag b{font-weight:500;opacity:.75;margin-right:4px}
+
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:start}
+@media (max-width:1120px){.board{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--surface-2)}
+.toggle button{font:600 14px var(--f-body);border:0;background:transparent;color:var(--ink);padding:8px 14px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--band);color:#fff}
+.toggle button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.legend{display:flex;gap:12px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.shape-caption{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+svg.pitch{width:100%;max-width:520px;height:auto;display:block;border-radius:8px;margin:0 auto}
+.pl{transition:transform .6s cubic-bezier(.5,0,.2,1)}
+@media (prefers-reduced-motion:reduce){.pl{transition:none}}
+.variants .chips label{font-size:13px;padding:5px 9px;font-family:var(--f-mono)}
+
+.tablebox{overflow-x:auto;min-width:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.pos{white-space:nowrap}
+td.pos b{display:inline-block;font-family:var(--f-display);font-size:15px;color:#fff;border-radius:4px;padding:1px 7px;margin-bottom:3px}
+td.pos span{display:block;font-size:12px;color:var(--muted)}
+.role{font-weight:600}
+.duty{font-family:var(--f-mono);font-size:11px;border-radius:3px;padding:1px 5px;margin-left:5px;color:#111;vertical-align:1px;font-weight:500}
+.duty.D{background:var(--dD)} .duty.S{background:var(--dS)} .duty.A{background:var(--dA)}
+.desc{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+.pis{display:block;font-size:12.5px;font-family:var(--f-mono);color:var(--accent);margin-top:2px}
+.ph{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.ph.ip{background:var(--accent)} .ph.oop{background:var(--oop)}
+
+.instr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.instr{grid-template-columns:minmax(0,1fr)}}
+.card h3.band{background:var(--band);color:#fff;margin:-16px -16px 4px;padding:9px 16px;border-radius:12px 12px 0 0}
+.grp{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-top:4px;border-top:1px solid var(--line);padding-top:8px}
+.grp:first-of-type{border-top:0;padding-top:0}
+dl{margin:0;display:grid;gap:8px}
+dl div{display:grid;gap:1px}
+dt{font-size:14px;font-weight:600}
+dt .val{color:var(--accent)}
+dt .adv-mark{font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:var(--oop);border:1px solid var(--oop);border-radius:3px;padding:0 4px;margin-left:6px;vertical-align:1px}
+dd{margin:0;font-size:13px;color:var(--muted)}
+.untouched{font-size:13px;color:var(--muted);margin:8px 0 0}
+
+.checks{display:grid;gap:8px}
+.chk{border-radius:8px;padding:10px 14px;font-size:14.5px;display:grid;gap:2px;border-left:4px solid currentColor}
+.chk strong{font-weight:700}
+.chk.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.chk.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chk.info{background:var(--info-bg);color:var(--info-ink)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14.5px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 14px var(--f-body);letter-spacing:.02em;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:7px;padding:9px 16px;cursor:pointer}
+.btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.copied{font-size:13px;color:var(--muted)}
+textarea.fb{width:100%;min-height:150px;font-family:var(--f-mono);font-size:11px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;word-break:break-all}
+.fmf{border:2px solid var(--band-2)}
+.steps{margin:0;padding-left:20px;display:grid;gap:4px;font-size:14.5px}
+.mono{font-family:var(--f-mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:10px}
+summary{cursor:pointer;font-weight:600;font-size:14.5px;color:var(--accent)}
+details[open] summary{margin-bottom:8px}
+details.alt{border-top:0;padding-top:0}
+.note{margin:0;font-size:13px;color:var(--muted)}
+a.bm{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px;text-decoration:none;padding:11px 18px;border-radius:8px;cursor:grab;border:2px dashed var(--accent-ink);box-shadow:0 0 0 2px var(--accent)}
+a.bm:active{cursor:grabbing}
+a.bm:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.setup{background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:12px;display:grid;gap:8px}
+footer{font-size:13px;color:var(--muted);max-width:90ch;border-top:1px solid var(--line);padding-top:14px;display:grid;gap:8px}
+footer p{margin:0}
+footer .credit{color:var(--ink);font-size:14px}
+footer .credit b{color:var(--accent);font-family:var(--f-display);letter-spacing:.04em;font-size:15px}
+footer .disc{font-size:12px;opacity:.85}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="eyebrow" data-i18n="eyebrow"></div>
+      <h1><span data-i18n="h1"></span> <em>FM27</em></h1>
+      <p class="lead" data-i18n="lead"></p>
+    </div>
+    <div class="hdr-right">
+    <a class="sig" href="#" aria-label="barfly86"><span class="sig-mark">B86</span><span><small data-i18n="byLabel"></small><b>barfly86</b></span></a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="pl" aria-pressed="false">PL</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <button type="button" data-lang="de" aria-pressed="false">DE</button>
+    </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <form id="f">
+      <fieldset class="coachbox">
+        <legend data-i18n="fCoach"></legend>
+        <select id="coach" name="coach"><option value="" data-i18n="coachNone"></option></select>
+        <p class="hint" data-i18n="coachHint"></p>
+      </fieldset>
+      <fieldset>
+        <legend><span data-i18n="fForm"></span> <small data-i18n="fFormSmall"></small></legend>
+        <div class="chips big" id="formChips"></div>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="fStyle"></legend>
+        <div class="chips big">
+          <input type="radio" name="style" id="s-possession" value="possession"><label for="s-possession" data-i18n="st_possession"></label>
+          <input type="radio" name="style" id="s-press" value="press" checked><label for="s-press" data-i18n="st_press"></label>
+          <input type="radio" name="style" id="s-counter" value="counter"><label for="s-counter" data-i18n="st_counter"></label>
+          <input type="radio" name="style" id="s-direct" value="direct"><label for="s-direct" data-i18n="st_direct"></label>
+          <input type="radio" name="style" id="s-defence" value="defence"><label for="s-defence" data-i18n="st_defence"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="fWidth"></legend>
+        <div class="chips">
+          <input type="radio" name="width" id="w-narrow" value="narrow"><label for="w-narrow" data-i18n="w_narrow"></label>
+          <input type="radio" name="width" id="w-balanced" value="balanced" checked><label for="w-balanced" data-i18n="w_balanced"></label>
+          <input type="radio" name="width" id="w-wide" value="wide"><label for="w-wide" data-i18n="w_wide"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="fLevel"></legend>
+        <div class="chips">
+          <input type="radio" name="level" id="l-fav" value="fav"><label for="l-fav" data-i18n="l_fav"></label>
+          <input type="radio" name="level" id="l-mid" value="mid" checked><label for="l-mid" data-i18n="l_mid"></label>
+          <input type="radio" name="level" id="l-und" value="und"><label for="l-und" data-i18n="l_und"></label>
+        </div>
+      </fieldset>
+      <div class="adv">
+        <label class="sw" for="adv"><input type="checkbox" id="adv"> <span data-i18n="advLabel"></span></label>
+        <p data-i18n="advDesc"></p>
+      </div>
+    </form>
+
+    <section class="result" aria-live="polite">
+      <div class="headline">
+        <div>
+          <div class="name" id="tName"></div>
+          <div class="sub" id="tSub"></div>
+        </div>
+        <div class="tags" id="tTags"></div>
+      </div>
+
+      <div class="board">
+        <div class="card">
+          <div class="row">
+            <div class="toggle" role="group">
+              <button type="button" id="bIP" aria-pressed="true" data-i18n="ip"></button>
+              <button type="button" id="bOOP" aria-pressed="false" data-i18n="oop"></button>
+            </div>
+            <div class="legend"><span><i style="background:var(--dD)"></i>Defend</span><span><i style="background:var(--dS)"></i>Support</span><span><i style="background:var(--dA)"></i>Attack</span></div>
+          </div>
+          <div class="shape-caption" id="shapeCap"></div>
+          <svg class="pitch" id="pitch" viewBox="0 0 680 1050" role="img"></svg>
+          <div class="variants">
+            <h3 data-i18n="oopShape" style="margin-bottom:6px"></h3>
+            <div class="chips" id="oopChips"></div>
+          </div>
+        </div>
+        <div class="card tablebox">
+          <h3 data-i18n="rolesH"></h3>
+          <table>
+            <thead><tr><th data-i18n="thPos"></th><th><span class="ph ip"></span><span data-i18n="ip"></span> · <span class="ph oop"></span><span data-i18n="oop"></span></th></tr></thead>
+            <tbody id="roles"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h2 data-i18n="checksH"></h2>
+        <div class="checks" id="checks"></div>
+      </div>
+
+      <div>
+        <h2 data-i18n="tiH"></h2>
+        <div class="instr">
+          <div class="card"><h3 class="band">In Possession</h3><dl id="iIP"></dl></div>
+          <div class="card"><h3 class="band">Out of Possession</h3><dl id="iOOP"></dl></div>
+        </div>
+        <p class="untouched" id="untouched"></p>
+      </div>
+
+      <div class="two">
+        <div class="card"><h3 data-i18n="whyH"></h3><ul class="plain" id="why"></ul></div>
+        <div class="card"><h3 data-i18n="watchH"></h3><ul class="plain" id="watch"></ul></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn ghost" id="copy" data-i18n="copyText"></button>
+        <span class="copied" id="copied"></span>
+      </div>
+      <textarea id="fallback" class="fb" hidden readonly></textarea>
+
+      <div class="card fmf">
+        <h3 class="band" data-i18n="fmfH"></h3>
+        <div class="setup">
+          <b data-i18n="setupH"></b>
+          <p class="note" style="color:var(--ink)" data-i18n-html="setupTxt"></p>
+          <div class="actions">
+            <a class="bm" id="bmLink" href="#" draggable="true" data-i18n="bmLabel"></a>
+            <span class="copied" id="bmHint" data-i18n="bmHint"></span>
+          </div>
+          <details class="alt">
+            <summary data-i18n="altSum"></summary>
+            <ol class="steps" data-i18n-html="altSteps"></ol>
+            <div class="actions">
+              <button type="button" class="btn ghost" id="copyBm" data-i18n="copyBm"></button>
+              <span class="copied" id="bmMsg"></span>
+            </div>
+            <textarea id="bmBox" class="fb" hidden readonly></textarea>
+          </details>
+        </div>
+        <b data-i18n="eachH"></b>
+        <ol class="steps" data-i18n-html="eachSteps"></ol>
+        <div class="actions">
+          <button type="button" class="btn" id="copyRecipe" data-i18n="copyRecipe"></button>
+          <span class="copied" id="recipeMsg"></span>
+        </div>
+        <textarea id="recipeBox" class="fb" hidden readonly></textarea>
+        <details>
+          <summary data-i18n="howSum"></summary>
+          <p class="note" data-i18n="howTxt"></p>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <footer><p class="credit"><span data-i18n="h1"></span> FM27 · <span data-i18n="byLabel"></span> <b>barfly86</b></p><p data-i18n="footer"></p><p class="disc" data-i18n="disclaimer"></p></footer>
+</div>
+
+<script>
+(function(){
+/* ======================= DANE PRESETÓW (aktualizuj tu po zmianach silnika) ======================= */
+const ROLES=["Goalkeeper","Wing-Back","Full-Back","Ball-Playing Centre-Back","Centre-Back","Free Role","Tracking Attacking Midfielder","Channel Forward","Tracking Centre Forward","Deep-Lying Playmaker","Central Midfielder","Dropping Defensive Midfielder","Defensive Midfielder","Wide Covering Central Midfielder","Poacher","Centre Forward","Covering Centre-Back","Screening Defensive Midfielder","Central Outlet Centre Forward","Holding Full-Back","Channel Midfielder","Attacking Midfielder","Screening Central Midfielder","Advanced Playmaker","Holding Wing-Back","Winger","Deep-Lying Forward","Inside Winger","Wide Forward","Tracking Winger","Ball-Playing Goalkeeper","Sweeper Keeper","Playmaking Wing-Back","Pressing Full-Back","Inside Full-Back","Box-to-Box Midfielder","Pressing Central Midfielder","Pressing Defensive Midfielder","Wide Midfielder","Inside Wing-Back","Advanced Wing-Back","Wide Centre-Back","Inside Forward","Pressing Wing-Back","Stopping Wide Centre-Back","Wide Covering Defensive Midfielder","Central Outlet Attacking Midfielder","Inside Outlet Winger","No-Nonsense Goalkeeper","No-Nonsense Centre-Back","Wide Central Midfielder","Tracking Wide Midfielder","Splitting Outlet Centre Forward","Splitting Outlet Attacking Midfielder","Second Striker","Stopping Centre-Back","Line-Holding Keeper","Target Forward","Box-to-Box Playmaker","Wide Outlet Wide Midfielder","Midfield Playmaker","Wide Outlet Winger"];
+
+const P=[["Catenaccio","5-2-1-2 DM AM","4-4-2 Diamond Narrow","Defensive","GK,0,D,GK,0,S WBR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,DL,2,D AMC,5,A,AMC,6,D STCR,7,A,STCR,8,D DMR,9,S,MCR,10,S DC,3,D,DM,11,D DML,12,D,MCL,13,S STCL,14,A,STCL,15,S"],["Catenaccio","5-2-1-2 DM AM","5-2-1-2 DM AM","Defensive","GK,0,D,GK,0,S WBR,1,S,WBR,1,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,WBL,1,D AMC,5,A,AMC,6,D STCR,7,A,STCR,8,D DMR,9,S,DMR,12,D DC,4,D,DC,16,D DML,12,D,DML,12,D STCL,14,A,STCL,15,S"],["Catenaccio","5-2-1-2 DM AM","5-3-2 DM WB","Defensive","GK,0,D,GK,0,S WBR,1,S,WBR,1,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,WBL,1,D AMC,5,A,MCL,10,S STCR,7,A,STCR,15,S DMR,9,S,MCR,10,S DC,4,D,DC,16,D DML,12,D,DM,17,D STCL,14,A,STCL,18,A"],["Catenaccio","5-2-2-1 DM AM","4-3-2-1 DM Narrow","Defensive","GK,0,D,GK,0,S WBR,1,S,DR,19,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,DL,2,D STC,15,A,STC,8,D AMCR,20,A,AMCR,21,S DMR,9,S,MCR,13,S DC,3,D,DM,11,D DML,12,D,MCL,22,D AMCL,23,A,AMCL,21,S"],["Catenaccio","5-2-2-1 DM AM","5-2-2-1 DM AM","Defensive","GK,0,D,GK,0,S WBR,1,S,WBR,1,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,WBL,24,D STC,15,A,STC,15,S AMCR,20,A,AMCR,21,S DMR,9,S,DMR,12,D DC,4,D,DC,16,D DML,12,D,DML,17,D AMCL,23,A,AMCL,6,D"],["Catenaccio","5-2-2-1 DM AM","5-2-3 DM Wide","Defensive","GK,0,D,GK,0,S WBR,1,S,WBR,24,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,WBL,24,D STC,15,A,STC,15,S AMCR,20,A,AMR,25,S DMR,9,S,DMR,12,D DC,4,D,DC,16,D DML,12,D,DML,12,D AMCL,23,A,AML,25,S"],["Catenaccio","5-2-3 DM Wide","4-3-3 DM Wide","Defensive","GK,0,D,GK,0,S WBR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,DL,19,D STC,26,A,STC,15,S AMR,27,S,AMR,25,S DMR,12,D,MCR,22,D DC,3,D,DM,11,D DML,9,S,MCL,10,S AML,28,A,AML,29,D"],["Catenaccio","5-2-3 DM Wide","5-2-2-1 DM AM","Defensive","GK,0,D,GK,0,S WBR,1,S,WBR,1,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,WBL,24,D STC,26,A,STC,15,S AMR,27,S,AMCR,6,D DMR,12,D,DMR,17,D DC,4,D,DC,16,D DML,9,S,DML,12,D AML,28,A,AMCL,21,S"],["Catenaccio","5-2-3 DM Wide","5-2-3 DM Wide","Defensive","GK,0,D,GK,0,S WBR,1,S,WBR,1,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D WBL,1,S,WBL,24,D STC,26,A,STC,15,S AMR,27,S,AMR,25,S DMR,12,D,DMR,17,D DC,4,D,DC,16,D DML,9,S,DML,12,D AML,28,A,AML,25,S"],["Control Possession","4-2-3-1 DM AM Wide","4-3-3 DM Wide","Positive","GK,30,S,GK,31,A DR,32,S,DR,33,S DCR,3,D,DCR,16,D DCL,4,D,DCL,4,D DL,34,D,DL,2,D DMR,35,S,MCR,10,S AMC,23,A,MCL,36,A DML,12,D,DM,12,D AMR,25,S,AMR,25,S STC,15,A,STC,15,S AML,28,A,AML,25,S"],["Control Possession","4-2-3-1 DM AM Wide","4-4-1-1 2DM","Positive","GK,30,S,GK,31,A DR,32,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,2,D DMR,35,S,DMR,37,S AMC,23,A,AMC,21,S DML,12,D,DML,12,D AMR,25,S,MR,38,S STC,15,A,STC,18,A AML,28,A,ML,38,S"],["Control Possession","4-2-3-1 DM AM Wide","4-2-2-2 DM","Positive","GK,30,S,GK,31,A DR,32,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,2,D DMR,35,S,DMR,37,S AMC,23,A,STCL,8,D DML,12,D,DML,12,D AMR,25,S,MR,38,S STC,15,A,STCR,18,A AML,28,A,ML,38,S"],["Control Possession","4-3-3 DM Wide","4-1-4-1 DM","Positive","GK,30,S,GK,31,A DR,34,D,DR,2,D DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,39,D,DL,2,D DM,12,D,DM,12,D MCR,23,A,MCR,10,S MCL,20,A,MCL,36,A AMR,28,A,MR,38,S AML,25,S,ML,38,S STC,15,A,STC,15,S"],["Control Possession","4-3-3 DM Wide","4-3-3 DM Wide","Positive","GK,30,S,GK,31,A DR,34,D,DR,33,S DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,39,D,DL,2,D DM,12,D,DM,12,D MCR,23,A,MCR,10,S MCL,20,A,MCL,36,A AMR,28,A,AMR,25,S AML,25,S,AML,29,D STC,15,A,STC,15,S"],["Control Possession","4-3-3 DM Wide","4-2-2-2 DM","Positive","GK,30,S,GK,31,A DR,34,D,DR,2,D DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,39,D,DL,2,D DM,12,D,DML,12,D MCR,23,A,DMR,37,S MCL,20,A,STCL,8,D AMR,28,A,MR,38,S AML,25,S,ML,38,S STC,15,A,STCR,15,S"],["Control Possession","5-2-3 DM Wide","4-3-3 DM Wide","Positive","GK,30,S,GK,31,A WBR,40,A,DR,33,S DCR,41,D,DCR,16,D DCL,41,D,DCL,4,D WBL,1,S,DL,2,D DMR,12,D,MCR,10,S DC,3,D,DM,12,D DML,9,S,MCL,36,A AMR,27,S,AMR,25,S STC,15,A,STC,15,S AML,42,A,AML,29,D"],["Control Possession","5-2-3 DM Wide","5-2-2-1 DM AM","Positive","GK,30,S,GK,31,A WBR,40,A,WBR,43,S DCR,41,D,DCR,44,D DCL,41,D,DCL,41,D WBL,1,S,WBL,1,D DMR,12,D,DMR,12,D DC,3,D,DC,4,D DML,9,S,DML,45,D AMR,27,S,AMCR,21,S STC,15,A,STC,15,S AML,42,A,AMCL,46,A"],["Control Possession","5-2-3 DM Wide","5-2-3 DM Wide","Positive","GK,30,S,GK,31,A WBR,40,A,WBR,43,S DCR,41,D,DCR,44,D DCL,41,D,DCL,41,D WBL,1,S,WBL,1,D DMR,12,D,DMR,12,D DC,3,D,DC,4,D DML,9,S,DML,45,D AMR,27,S,AMR,25,S STC,15,A,STC,15,S AML,42,A,AML,47,A"],["Direct Counter Attack","4-3-3 DM Wide","4-1-4-1 DM","Cautious","GK,48,D,GK,0,S DR,2,S,DR,19,D DCR,49,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D AMR,25,S,MR,38,S MCR,21,A,MCR,10,S MCL,50,S,MCL,10,S AML,42,A,ML,38,S DM,12,D,DM,11,D STC,15,A,STC,18,A"],["Direct Counter Attack","4-3-3 DM Wide","4-3-3 DM Wide","Cautious","GK,48,D,GK,0,S DR,2,S,DR,2,D DCR,4,D,DCR,4,D DCL,49,D,DCL,4,D DL,1,S,DL,2,D AMR,25,S,AMR,29,D MCR,21,A,MCR,10,S MCL,50,S,MCL,10,S AML,42,A,AML,29,D DM,12,D,DM,12,D STC,15,A,STC,18,A"],["Direct Counter Attack","4-3-3 DM Wide","4-2-2-2 DM","Cautious","GK,48,D,GK,0,S DR,2,S,DR,2,D DCR,4,D,DCR,4,D DCL,49,D,DCL,4,D DL,1,S,DL,2,D AMR,25,S,MR,38,S MCR,21,A,STCR,8,D MCL,50,S,DML,12,D AML,42,A,ML,38,S DM,12,D,DMR,12,D STC,15,A,STCL,18,A"],["Direct Counter Attack","4-2-2-2 DM","4-4-1-1 2DM","Cautious","GK,48,D,GK,0,S DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D MR,25,S,MR,38,S DMR,12,D,DMR,17,D DML,9,S,DML,12,D ML,38,S,ML,51,D STCR,26,A,STC,15,S STCL,14,A,AMC,21,S"],["Direct Counter Attack","4-2-2-2 DM","4-2-2-2 DM","Cautious","GK,48,D,GK,0,S DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D MR,25,S,MR,38,S DMR,12,D,DMR,17,D DML,9,S,DML,12,D ML,38,S,ML,51,D STCR,26,A,STCR,15,S STCL,14,A,STCL,15,S"],["Direct Counter Attack","4-2-2-2 DM","5-3-2 DM WB","Cautious","GK,48,D,GK,0,S DR,2,S,WBR,1,D DCR,49,D,DCR,4,D DCL,4,D,DC,16,D DL,1,S,DCL,41,D MR,25,S,MCR,10,S DMR,12,D,DM,17,D DML,9,S,MCL,22,D ML,38,S,WBL,43,S STCR,26,A,STCR,15,S STCL,14,A,STCL,52,A"],["Direct Counter Attack","5-2-3 DM Wide","4-3-3 DM Wide","Cautious","GK,48,D,GK,0,S DCR,41,D,DCR,4,D DC,49,D,DM,11,D DCL,41,D,DCL,4,D WBR,1,S,DR,19,D DMR,9,S,MCR,10,S DML,12,D,MCL,22,D WBL,1,S,DL,2,D AMR,27,S,AMR,29,D AML,42,A,AML,25,S STC,26,A,STC,15,S"],["Direct Counter Attack","5-2-3 DM Wide","5-2-2-1 DM AM","Cautious","GK,48,D,GK,0,S DCR,41,D,DCR,4,D DC,49,D,DC,16,D DCL,41,D,DCL,4,D WBR,1,S,WBR,24,D DMR,9,S,DMR,12,D DML,12,D,DML,12,D WBL,1,S,WBL,1,D AMR,27,S,AMCR,21,S AML,42,A,AMCL,53,A STC,26,A,STC,15,S"],["Direct Counter Attack","5-2-3 DM Wide","5-2-3 DM Wide","Cautious","GK,48,D,GK,0,S DCR,41,D,DCR,4,D DC,49,D,DC,16,D DCL,41,D,DCL,4,D WBR,1,S,WBR,24,D DMR,9,S,DMR,12,D DML,12,D,DML,12,D WBL,1,S,WBL,1,D AMR,27,S,AMR,25,S AML,42,A,AML,25,S STC,26,A,STC,15,S"],["Fluid Counter Attack","4-2-3-1 DM AM Wide","4-3-3 DM Wide","Cautious","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMC,20,A,MCR,36,A DML,9,S,MCL,22,D DMR,12,D,DM,12,D AMR,27,S,AMR,29,D AML,25,S,AML,25,S STC,15,A,STC,15,S"],["Fluid Counter Attack","4-2-3-1 DM AM Wide","4-4-1-1 2DM","Cautious","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMC,20,A,AMC,21,S DML,9,S,DML,17,D DMR,12,D,DMR,12,D AMR,27,S,MR,38,S AML,25,S,ML,38,S STC,15,A,STC,15,S"],["Fluid Counter Attack","4-2-3-1 DM AM Wide","4-2-2-2 DM","Cautious","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMC,20,A,STCL,8,D DML,9,S,DML,17,D DMR,12,D,DMR,12,D AMR,27,S,MR,38,S AML,25,S,ML,38,S STC,15,A,STCR,15,S"],["Fluid Counter Attack","4-3-3 DM Wide","4-1-4-1 DM","Cautious","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D DM,12,D,DM,12,D MCL,10,S,MCL,22,D MCR,21,A,MCR,36,A AMR,25,S,MR,38,S AML,27,S,ML,38,S STC,15,A,STC,18,A"],["Fluid Counter Attack","4-3-3 DM Wide","4-3-3 DM Wide","Cautious","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D DM,12,D,DM,12,D MCL,10,S,MCL,22,D MCR,21,A,MCR,36,A AMR,25,S,AMR,29,D AML,27,S,AML,25,S STC,15,A,STC,15,S"],["Fluid Counter Attack","4-3-3 DM Wide","4-2-2-2 DM","Cautious","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D DM,12,D,DMR,12,D MCL,10,S,DML,12,D MCR,21,A,STCR,8,D AMR,25,S,MR,38,S AML,27,S,ML,38,S STC,15,A,STCL,15,S"],["Fluid Counter Attack","5-2-2-1 DM AM","4-3-2-1 DM Narrow","Cautious","GK,0,D,GK,0,S DCR,41,D,DCR,4,D DC,4,D,DM,12,D DCL,41,D,DCL,4,D WBR,1,S,DR,2,D DMR,9,S,MCR,13,S DML,12,D,MCL,10,S WBL,40,A,DL,2,D AMCR,21,A,AMCR,21,S AMCL,20,A,AMCL,53,A STC,26,A,STC,15,S"],["Fluid Counter Attack","5-2-2-1 DM AM","5-2-2-1 DM AM","Cautious","GK,0,D,GK,0,S DCR,41,D,DCR,41,D DC,4,D,DC,16,D DCL,41,D,DCL,41,D WBR,1,S,WBR,1,D DMR,9,S,DMR,12,D DML,12,D,DML,12,D WBL,40,A,WBL,1,D AMCR,21,A,AMCR,6,D AMCL,20,A,AMCL,21,S STC,26,A,STC,18,A"],["Fluid Counter Attack","5-2-2-1 DM AM","5-2-3 DM Wide","Cautious","GK,0,D,GK,0,S DCR,41,D,DCR,41,D DC,4,D,DC,16,D DCL,41,D,DCL,41,D WBR,1,S,WBR,1,D DMR,9,S,DMR,12,D DML,12,D,DML,12,D WBL,40,A,WBL,1,D AMCR,21,A,AMR,25,S AMCL,20,A,AML,47,A STC,26,A,STC,15,S"],["Gegenpress","4-2-3-1 DM AM Wide","4-3-3 DM Wide","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMC,54,A,MCR,36,A DMR,12,D,DM,12,D DML,9,S,MCL,10,S AMR,27,S,AMR,25,S AML,42,A,AML,25,S STC,15,A,STC,15,S"],["Gegenpress","4-2-3-1 DM AM Wide","4-4-1-1 2DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMC,54,A,AMC,21,S DMR,12,D,DMR,12,D DML,9,S,DML,37,S AMR,27,S,MR,38,S AML,42,A,ML,38,S STC,15,A,STC,15,S"],["Gegenpress","4-2-3-1 DM AM Wide","4-2-2-2 DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMC,54,A,STCL,15,S DMR,12,D,DMR,12,D DML,9,S,DML,37,S AMR,27,S,MR,38,S AML,42,A,ML,38,S STC,15,A,STCR,15,S"],["Gegenpress","4-2-4 DM Wide","4-4-1-1 2DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D DMR,12,D,DMR,12,D DML,9,S,DML,37,S AMR,27,S,MR,38,S AML,42,A,ML,38,S STCR,7,A,AMC,21,S STCL,26,A,STC,15,S"],["Gegenpress","4-2-4 DM Wide","4-2-2-2 DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D DMR,12,D,DMR,12,D DML,9,S,DML,37,S AMR,27,S,MR,38,S AML,42,A,ML,38,S STCR,7,A,STCR,15,S STCL,26,A,STCL,15,S"],["Gegenpress","4-2-4 DM Wide","5-3-2 DM WB","Balanced","GK,30,S,GK,31,A DR,1,S,WBR,43,S DCR,3,D,DCR,41,D DCL,4,D,DC,4,D DL,2,S,DCL,55,D DMR,12,D,DM,12,D DML,9,S,MCL,10,S AMR,27,S,MCR,36,A AML,42,A,WBL,43,S STCR,7,A,STCR,15,S STCL,26,A,STCL,15,S"],["Gegenpress","4-3-3 DM Wide","4-1-4-1 DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,33,S DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,1,S,DL,2,D DM,12,D,DM,12,D MCR,50,S,MCR,10,S MCL,10,S,MCL,36,A AMR,42,A,MR,38,S AML,27,S,ML,38,S STC,15,A,STC,15,S"],["Gegenpress","4-3-3 DM Wide","4-3-3 DM Wide","Balanced","GK,30,S,GK,31,A DR,1,S,DR,33,S DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,1,S,DL,2,D DM,12,D,DM,12,D MCR,50,S,MCR,10,S MCL,10,S,MCL,36,A AMR,42,A,AMR,25,S AML,27,S,AML,25,S STC,15,A,STC,15,S"],["Gegenpress","4-3-3 DM Wide","4-2-2-2 DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,1,S,DL,2,D DM,12,D,DML,12,D MCR,50,S,DMR,37,S MCL,10,S,STCL,8,D AMR,42,A,MR,38,S AML,27,S,ML,38,S STC,15,A,STCR,15,S"],["Park The Bus","4-3-3 DM Wide","4-1-4-1 DM","Defensive","GK,48,D,GK,56,D DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,19,D DM,12,D,DM,11,D MCR,10,S,MCR,10,S MCL,10,S,MCL,22,D AMR,25,S,MR,38,S AML,27,S,ML,51,D STC,15,A,STC,15,S"],["Park The Bus","4-3-3 DM Wide","4-3-3 DM Wide","Defensive","GK,48,D,GK,56,D DR,2,S,DR,19,D DCR,49,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D DM,12,D,DM,11,D MCR,10,S,MCR,10,S MCL,10,S,MCL,10,S AMR,25,S,AMR,29,D AML,27,S,AML,25,S STC,15,A,STC,8,D"],["Park The Bus","4-3-3 DM Wide","4-2-2-2 DM","Defensive","GK,48,D,GK,56,D DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,19,D DM,12,D,DMR,11,D MCR,10,S,STCR,8,D MCL,10,S,DML,17,D AMR,25,S,MR,38,S AML,27,S,ML,51,D STC,15,A,STCL,15,S"],["Park The Bus","4-2-2-2 DM","4-4-1-1 2DM","Defensive","GK,48,D,GK,56,D DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D DMR,9,S,DMR,12,D STCL,15,A,AMC,21,S DML,12,D,DML,12,D STCR,26,A,STC,15,S MR,38,S,MR,51,D ML,25,S,ML,51,D"],["Park The Bus","4-2-2-2 DM","4-2-2-2 DM","Defensive","GK,48,D,GK,56,D DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D DMR,9,S,DMR,12,D STCL,15,A,STCL,8,D DML,12,D,DML,12,D STCR,26,A,STCR,15,S MR,38,S,MR,51,D ML,25,S,ML,51,D"],["Park The Bus","4-2-2-2 DM","5-3-2 DM WB","Defensive","GK,48,D,GK,56,D DR,2,S,DCR,4,D DCR,49,D,DC,16,D DCL,49,D,DCL,4,D DL,2,S,WBL,24,D DMR,9,S,MCR,22,D STCL,15,A,STCL,8,D DML,12,D,DM,12,D STCR,26,A,STCR,15,S MR,38,S,WBR,1,D ML,25,S,MCL,13,S"],["Park The Bus","5-2-3 DM Wide","4-3-3 DM Wide","Defensive","GK,48,D,GK,56,D DCR,4,D,DCR,4,D DC,49,D,DM,11,D DCL,4,D,DCL,4,D WBR,1,S,DR,2,D DMR,9,S,MCR,10,S DML,12,D,MCL,22,D WBL,1,S,DL,2,D AMR,25,S,AMR,29,D AML,27,S,AML,29,D STC,15,A,STC,15,S"],["Park The Bus","5-2-3 DM Wide","5-2-2-1 DM AM","Defensive","GK,48,D,GK,56,D DCR,4,D,DCR,4,D DC,49,D,DC,16,D DCL,4,D,DCL,4,D WBR,1,S,WBR,24,D DMR,9,S,DMR,12,D DML,12,D,DML,17,D WBL,1,S,WBL,1,D AMR,25,S,AMCR,21,S AML,27,S,AMCL,6,D STC,15,A,STC,8,D"],["Park The Bus","5-2-3 DM Wide","5-2-3 DM Wide","Defensive","GK,48,D,GK,56,D DCR,4,D,DCR,4,D DC,49,D,DC,16,D DCL,4,D,DCL,4,D WBR,1,S,WBR,24,D DMR,9,S,DMR,12,D DML,12,D,DML,12,D WBL,1,S,WBL,24,D AMR,25,S,AMR,25,S AML,27,S,AML,25,S STC,15,A,STC,8,D"],["Route One","4-2-4 DM Wide","4-4-1-1 2DM","Balanced","GK,48,D,GK,56,D DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D AMR,25,S,MR,38,S DMR,12,D,DMR,12,D DML,35,S,DML,12,D AML,25,S,ML,38,S STCR,57,A,STC,15,S STCL,7,A,AMC,21,S"],["Route One","4-2-4 DM Wide","4-2-2-2 DM","Balanced","GK,48,D,GK,56,D DR,2,S,DR,2,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D AMR,25,S,MR,38,S DMR,12,D,DMR,12,D DML,35,S,DML,12,D AML,25,S,ML,38,S STCR,57,A,STCR,15,S STCL,7,A,STCL,15,S"],["Route One","4-2-4 DM Wide","5-3-2 DM WB","Balanced","GK,48,D,GK,56,D DR,2,S,WBR,1,D DCR,49,D,DCR,41,D DCL,49,D,DC,16,D DL,2,S,DCL,41,D AMR,25,S,MCR,10,S DMR,12,D,DM,12,D DML,35,S,MCL,10,S AML,25,S,WBL,1,D STCR,57,A,STCR,15,S STCL,7,A,STCL,52,A"],["Route One","4-3-3 DM Wide","4-1-4-1 DM","Balanced","GK,48,D,GK,56,D DR,2,S,DR,19,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D AMR,28,A,MR,38,S MCR,10,S,MCR,10,S MCL,21,A,MCL,10,S AML,25,S,ML,38,S DM,12,D,DM,12,D STC,57,A,STC,18,A"],["Route One","4-3-3 DM Wide","4-3-3 DM Wide","Balanced","GK,48,D,GK,56,D DR,2,S,DR,19,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D AMR,28,A,AMR,25,S MCR,10,S,MCR,10,S MCL,21,A,MCL,10,S AML,25,S,AML,29,D DM,12,D,DM,12,D STC,57,A,STC,15,S"],["Route One","4-3-3 DM Wide","4-2-2-2 DM","Balanced","GK,48,D,GK,56,D DR,2,S,DR,19,D DCR,49,D,DCR,4,D DCL,49,D,DCL,4,D DL,2,S,DL,2,D AMR,28,A,MR,38,S MCR,10,S,DMR,12,D MCL,21,A,STCL,8,D AML,25,S,ML,38,S DM,12,D,DML,17,D STC,57,A,STCR,15,S"],["Route One","5-3-2 DM WB","4-2-2-2 DM","Balanced","GK,48,D,GK,56,D DCR,41,D,DR,19,D DC,49,D,DCR,4,D DCL,41,D,DL,2,D WBR,40,A,MR,38,S DM,9,S,DCL,4,D WBL,1,S,ML,51,D MCR,10,S,DMR,12,D MCL,21,A,DML,12,D STCR,14,A,STCR,52,A STCL,57,A,STCL,15,S"],["Route One","5-3-2 DM WB","5-2-1-2 DM AM","Balanced","GK,48,D,GK,56,D DCR,41,D,DCR,41,D DC,49,D,DC,16,D DCL,41,D,DCL,41,D WBR,40,A,WBR,1,D DM,9,S,DML,17,D WBL,1,S,WBL,1,D MCR,10,S,DMR,12,D MCL,21,A,AMC,6,D STCR,14,A,STCR,52,A STCL,57,A,STCL,15,S"],["Route One","5-3-2 DM WB","5-3-2 DM WB","Balanced","GK,48,D,GK,56,D DCR,41,D,DCR,41,D DC,49,D,DC,16,D DCL,41,D,DCL,41,D WBR,40,A,WBR,1,D DM,9,S,DM,17,D WBL,1,S,WBL,1,D MCR,10,S,MCR,10,S MCL,21,A,MCL,10,S STCR,14,A,STCR,52,A STCL,57,A,STCL,15,S"],["Tiki-Taka","4-2-3-1 DM AM Wide","4-3-3 DM Wide","Positive","GK,30,S,GK,31,A DR,34,D,DR,19,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,32,S,DL,33,S DMR,12,D,DM,12,D DML,58,S,MCL,10,S AMR,25,S,AMR,29,D AMC,5,A,MCR,36,A AML,28,A,AML,25,S STC,15,A,STC,15,S"],["Tiki-Taka","4-2-3-1 DM AM Wide","4-4-1-1 2DM","Positive","GK,30,S,GK,31,A DR,34,D,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,32,S,DL,2,D DMR,12,D,DMR,12,D DML,58,S,DML,37,S AMR,25,S,MR,38,S AMC,5,A,AMC,46,A AML,28,A,ML,38,S STC,15,A,STC,15,S"],["Tiki-Taka","4-2-3-1 DM AM Wide","4-2-2-2 DM","Positive","GK,30,S,GK,31,A DR,34,D,DR,19,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,32,S,DL,2,D DMR,12,D,DMR,12,D DML,58,S,DML,37,S AMR,25,S,MR,59,A AMC,5,A,STCR,8,D AML,28,A,ML,38,S STC,15,A,STCL,15,S"],["Tiki-Taka","4-3-3 DM Wide","4-1-4-1 DM","Positive","GK,30,S,GK,31,A DR,39,D,DR,33,S DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,19,D DM,9,S,DM,12,D MCR,23,A,MCR,36,A MCL,60,S,MCL,10,S AMR,25,S,MR,38,S AML,28,A,ML,38,S STC,26,A,STC,15,S"],["Tiki-Taka","4-3-3 DM Wide","4-3-3 DM Wide","Positive","GK,30,S,GK,31,A DR,39,D,DR,33,S DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,19,D DM,9,S,DM,12,D MCR,23,A,MCR,36,A MCL,60,S,MCL,10,S AMR,25,S,AMR,25,S AML,28,A,AML,25,S STC,26,A,STC,8,D"],["Tiki-Taka","4-3-3 DM Wide","4-2-2-2 DM","Positive","GK,30,S,GK,31,A DR,39,D,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,19,D DM,9,S,DMR,12,D MCR,23,A,STCR,8,D MCL,60,S,DML,37,S AMR,25,S,MR,38,S AML,28,A,ML,38,S STC,26,A,STCL,15,S"],["Tiki-Taka","5-2-3 DM Wide","4-3-3 DM Wide","Positive","GK,30,S,GK,31,A WBR,1,S,DR,2,D DCR,41,D,DCR,4,D DCL,41,D,DCL,4,D WBL,40,A,DL,2,D DC,3,D,DM,17,D DMR,9,S,MCR,10,S DML,12,D,MCL,13,S AMR,42,A,AMR,25,S AML,27,S,AML,47,A STC,7,A,STC,15,S"],["Tiki-Taka","5-2-3 DM Wide","5-2-2-1 DM AM","Positive","GK,30,S,GK,31,A WBR,1,S,WBR,43,S DCR,41,D,DCR,41,D DCL,41,D,DCL,41,D WBL,40,A,WBL,43,S DC,3,D,DC,4,D DMR,9,S,DMR,12,D DML,12,D,DML,17,D AMR,42,A,AMCR,21,S AML,27,S,AMCL,46,A STC,7,A,STC,15,S"],["Tiki-Taka","5-2-3 DM Wide","5-2-3 DM Wide","Positive","GK,30,S,GK,31,A WBR,1,S,WBR,1,D DCR,41,D,DCR,41,D DCL,41,D,DCL,41,D WBL,40,A,WBL,43,S DC,3,D,DC,4,D DMR,9,S,DMR,37,S DML,12,D,DML,12,D AMR,42,A,AMR,25,S AML,27,S,AML,47,A STC,7,A,STC,15,S"],["Vertical Tiki-Taka","4-2-3-1 DM AM Wide","4-3-3 DM Wide","Balanced","GK,30,S,GK,0,S DR,1,S,DR,33,S DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,32,S,DL,2,D DMR,9,S,MCR,10,S DML,12,D,DM,17,D AMR,27,S,AMR,25,S AMC,21,A,MCL,36,A AML,28,A,AML,29,D STC,26,A,STC,18,A"],["Vertical Tiki-Taka","4-2-3-1 DM AM Wide","4-4-1-1 2DM","Balanced","GK,30,S,GK,0,S DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,32,S,DL,2,D DMR,9,S,DMR,12,D DML,12,D,DML,17,D AMR,27,S,MR,38,S AMC,21,A,AMC,21,S AML,28,A,ML,38,S STC,26,A,STC,18,A"],["Vertical Tiki-Taka","4-2-3-1 DM AM Wide","4-2-2-2 DM","Balanced","GK,30,S,GK,31,A DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,3,D,DCL,4,D DL,32,S,DL,2,D DMR,58,S,DMR,12,D DML,12,D,DML,17,D AMR,27,S,MR,38,S AMC,21,A,STCL,8,D AML,28,A,ML,38,S STC,26,A,STCR,18,A"],["Vertical Tiki-Taka","4-3-3 DM Wide","4-1-4-1 DM","Balanced","GK,30,S,GK,0,S DR,39,D,DR,33,S DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,19,D DM,9,S,DM,12,D MCL,20,A,MCL,36,A MCR,60,S,MCR,10,S AMR,28,A,MR,38,S AML,25,S,ML,38,S STC,7,A,STC,15,S"],["Vertical Tiki-Taka","4-3-3 DM Wide","4-3-3 DM Wide","Balanced","GK,30,S,GK,0,S DR,39,D,DR,33,S DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,19,D DM,9,S,DM,12,D MCL,20,A,MCL,36,A MCR,60,S,MCR,10,S AMR,28,A,AMR,25,S AML,25,S,AML,25,S STC,7,A,STC,8,D"],["Vertical Tiki-Taka","4-3-3 DM Wide","4-2-2-2 DM","Balanced","GK,30,S,GK,0,S DR,39,D,DR,33,S DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,34,D,DL,19,D DM,9,S,DML,17,D MCL,20,A,STCL,8,D MCR,60,S,DMR,12,D AMR,28,A,MR,38,S AML,25,S,ML,38,S STC,7,A,STCR,15,S"],["Vertical Tiki-Taka","4-4-2 Diamond Narrow","4-3-3 DM Wide","Balanced","GK,30,S,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,33,S DM,9,S,DM,12,D MCL,60,S,MCL,10,S MCR,50,S,MCR,13,S STCR,7,A,AMR,61,A AMC,21,A,STC,8,D STCL,15,A,AML,25,S"],["Vertical Tiki-Taka","4-4-2 Diamond Narrow","4-2-2-2 DM","Balanced","GK,30,S,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,33,S DM,9,S,DML,12,D MCL,60,S,ML,38,S MCR,50,S,MR,38,S STCR,7,A,STCR,52,A AMC,21,A,DMR,37,S STCL,15,A,STCL,15,S"],["Vertical Tiki-Taka","4-4-2 Diamond Narrow","4-4-2 Diamond Narrow","Balanced","GK,30,S,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,33,S DM,9,S,DM,12,D MCL,60,S,MCL,10,S MCR,50,S,MCR,13,S STCR,7,A,STCR,52,A AMC,21,A,AMC,6,D STCL,15,A,STCL,15,S"],["Wingplay","4-2-3-1 DM AM Wide","4-3-3 DM Wide","Balanced","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D DMR,12,D,DM,12,D DML,35,S,MCL,10,S AMR,25,S,AMR,25,S AMC,54,A,STC,15,S AML,25,S,AML,29,D STC,7,A,MCR,10,S"],["Wingplay","4-2-3-1 DM AM Wide","4-4-1-1 2DM","Balanced","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D DMR,12,D,DMR,17,D DML,35,S,DML,12,D AMR,25,S,MR,38,S AMC,54,A,STC,15,S AML,25,S,ML,38,S STC,7,A,AMC,21,S"],["Wingplay","4-2-3-1 DM AM Wide","4-2-2-2 DM","Balanced","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D DMR,12,D,DMR,17,D DML,35,S,DML,12,D AMR,25,S,MR,38,S AMC,54,A,STCL,52,A AML,25,S,ML,38,S STC,7,A,STCR,8,D"],["Wingplay","4-2-4 DM Wide","4-4-1-1 2DM","Balanced","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMR,25,S,MR,38,S DMR,12,D,DMR,12,D DML,35,S,DML,12,D AML,25,S,ML,38,S STCR,26,A,STC,15,S STCL,15,A,AMC,21,S"],["Wingplay","4-2-4 DM Wide","4-2-2-2 DM","Balanced","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,2,S,DL,2,D AMR,25,S,MR,38,S DMR,12,D,DMR,12,D DML,35,S,DML,12,D AML,25,S,ML,38,S STCR,26,A,STCR,15,S STCL,15,A,STCL,8,D"],["Wingplay","4-2-4 DM Wide","5-3-2 DM WB","Balanced","GK,0,D,GK,0,S DR,1,S,WBR,1,D DCR,4,D,DCR,41,D DCL,4,D,DC,16,D DL,2,S,DCL,41,D AMR,25,S,MCR,36,A DMR,12,D,DM,12,D DML,35,S,MCL,10,S AML,25,S,WBL,43,S STCR,26,A,STCR,15,S STCL,15,A,STCL,52,A"],["Wingplay","4-3-3 DM Wide","4-1-4-1 DM","Balanced","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D AMR,28,A,MR,38,S MCR,60,S,MCR,10,S MCL,10,S,MCL,10,S AML,25,S,ML,38,S DM,12,D,DM,17,D STC,15,A,STC,15,S"],["Wingplay","4-3-3 DM Wide","4-3-3 DM Wide","Balanced","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D AMR,28,A,AMR,25,S MCR,60,S,MCR,10,S MCL,10,S,MCL,10,S AML,25,S,AML,29,D DM,12,D,DM,12,D STC,15,A,STC,15,S"],["Wingplay","4-3-3 DM Wide","4-2-2-2 DM","Balanced","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,4,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D AMR,28,A,MR,38,S MCR,60,S,DMR,12,D MCL,10,S,STCL,8,D AML,25,S,ML,38,S DM,12,D,DML,17,D STC,15,A,STCR,52,A"]];
+
+/* Płaskie 4-4-2 nie ma presetu SI. Szablony na bazie przetestowanej taktyki WARRIOR (4-4-2 / 4-2-2-2 DM). */
+const TEMPLATES=[
+ ["Szablon 4-4-2","4-4-2","4-4-2","Balanced","GK,0,D,GK,0,S DR,2,S,DR,2,D DCR,3,D,DCR,4,D DCL,4,D,DCL,4,D DL,1,S,DL,2,D MR,25,S,MR,38,S MCR,20,A,MCR,10,S MCL,60,S,MCL,22,D ML,27,S,ML,38,S STCR,7,A,STCR,15,S STCL,15,A,STCL,8,D"],
+ ["Szablon 4-4-2","4-4-2","4-2-2-2 DM","Balanced","GK,0,D,GK,0,S DR,1,S,DR,2,D DCR,3,D,DCR,4,D DCL,3,D,DCL,4,D DL,1,S,DL,2,D MR,25,S,MR,51,D MCR,20,A,DMR,12,D MCL,60,S,DML,12,D ML,25,S,ML,51,D STCR,7,A,STCR,15,S STCL,15,A,STCL,15,S"]
+];
+
+const FORMATIONS=[
+ {id:"4231",label:"4-2-3-1",ip:"4-2-3-1 DM AM Wide"},
+ {id:"433",label:"4-3-3",ip:"4-3-3 DM Wide"},
+ {id:"442",label:"4-4-2",ip:"4-4-2"},
+ {id:"424",label:"4-2-4",ip:"4-2-4 DM Wide"},
+ {id:"4222",label:"4-2-2-2",ip:"4-2-2-2 DM"},
+ {id:"diamond",label:null,ip:"4-4-2 Diamond Narrow"},
+ {id:"523",label:"3-4-3 (5-2-3)",ip:"5-2-3 DM Wide"},
+ {id:"532",label:"3-5-2 (5-3-2)",ip:"5-3-2 DM WB"},
+ {id:"5212",label:"5-2-1-2",ip:"5-2-1-2 DM AM"},
+ {id:"5221",label:"3-4-2-1 (5-2-2-1)",ip:"5-2-2-1 DM AM"}
+];
+const MAP={
+ possession:{narrow:"Tiki-Taka",balanced:"Control Possession",wide:"Control Possession"},
+ press:{narrow:"Vertical Tiki-Taka",balanced:"Gegenpress",wide:"Gegenpress"},
+ counter:{narrow:"Fluid Counter Attack",balanced:"Fluid Counter Attack",wide:"Direct Counter Attack"},
+ direct:{narrow:"Route One",balanced:"Route One",wide:"Wingplay"},
+ defence:{narrow:"Catenaccio",balanced:"Park The Bus",wide:"Park The Bus"}
+};
+const NEAR={
+ "Gegenpress":["Control Possession","Vertical Tiki-Taka","Fluid Counter Attack","Wingplay","Tiki-Taka","Route One","Direct Counter Attack","Park The Bus","Catenaccio"],
+ "Control Possession":["Tiki-Taka","Vertical Tiki-Taka","Gegenpress","Fluid Counter Attack","Wingplay","Direct Counter Attack","Route One","Park The Bus","Catenaccio"],
+ "Tiki-Taka":["Control Possession","Vertical Tiki-Taka","Gegenpress","Fluid Counter Attack","Wingplay","Direct Counter Attack","Route One","Park The Bus","Catenaccio"],
+ "Vertical Tiki-Taka":["Tiki-Taka","Control Possession","Gegenpress","Fluid Counter Attack","Wingplay","Route One","Direct Counter Attack","Park The Bus","Catenaccio"],
+ "Fluid Counter Attack":["Direct Counter Attack","Gegenpress","Vertical Tiki-Taka","Control Possession","Wingplay","Route One","Tiki-Taka","Park The Bus","Catenaccio"],
+ "Direct Counter Attack":["Fluid Counter Attack","Park The Bus","Route One","Catenaccio","Gegenpress","Wingplay","Control Possession","Vertical Tiki-Taka","Tiki-Taka"],
+ "Wingplay":["Route One","Gegenpress","Fluid Counter Attack","Control Possession","Direct Counter Attack","Vertical Tiki-Taka","Tiki-Taka","Park The Bus","Catenaccio"],
+ "Route One":["Wingplay","Direct Counter Attack","Gegenpress","Fluid Counter Attack","Park The Bus","Control Possession","Vertical Tiki-Taka","Catenaccio","Tiki-Taka"],
+ "Park The Bus":["Catenaccio","Direct Counter Attack","Fluid Counter Attack","Route One","Wingplay","Gegenpress","Control Possession","Vertical Tiki-Taka","Tiki-Taka"],
+ "Catenaccio":["Park The Bus","Direct Counter Attack","Fluid Counter Attack","Route One","Gegenpress","Wingplay","Control Possession","Vertical Tiki-Taka","Tiki-Taka"]
+};
+
+/* Instrukcje zespołowe w kolejności ekranów gry: [id, faza, grupa, etykieta w grze, domyślna, klucz w pliku, wyjaśnienia pl/en/es/de] */
+const TI=[
+ ["passing-directness","in","Overview","Passing Directness","Standard","PASSING_DIRECTNESS",["Długość podań. Krótsze to bezpieczniej i więcej posiadania, bardziej bezpośrednie to szybciej do przodu, ale więcej strat.","Pass length. Shorter is safer and keeps the ball; more direct moves it forward faster but loses it more often.","Longitud del pase. Más corto es más seguro y da posesión; más directo avanza antes, pero se pierde más el balón.","Passlänge. Kürzer ist sicherer und bringt Ballbesitz, direkter geht schneller nach vorn, kostet aber mehr Ballverluste."]],
+ ["tempo","in","Overview","Tempo","Normal","TEMPO",["Jak szybko drużyna gra piłką. Wyższe tempo daje więcej akcji, ale też więcej strat i szybsze zmęczenie.","How quickly the team plays the ball. Higher tempo means more attacks but also more turnovers and faster fatigue.","Velocidad con la que el equipo mueve el balón. Más ritmo da más ataques, pero también más pérdidas y más cansancio.","Wie schnell das Team den Ball laufen lässt. Höheres Tempo bringt mehr Angriffe, aber auch mehr Ballverluste und schnellere Ermüdung."]],
+ ["attacking-width","in","Overview","Attacking Width","Standard","ATTACKING_WIDTH",["Szerokość ustawienia w ataku. Wąsko daje przewagę w środku, szeroko rozciąga obronę rywala.","Width of the shape in attack. Narrow gives you numbers centrally, wide stretches the opposition defence.","Amplitud en ataque. Estrecho da superioridad en el centro; amplio abre la defensa rival.","Breite der Formation im Angriff. Eng sorgt für Überzahl im Zentrum, breit zieht die gegnerische Abwehr auseinander."]],
+ ["attacking-transition","in","Overview","Attacking Transition","Standard","ATTACKING_TRANSITION",["Co robić po odbiorze piłki: szybki atak (Counter-Attack) albo uspokoić grę i się ustawić (Hold Shape).","What to do after winning the ball: attack fast (Counter-Attack) or calm down and get into shape (Hold Shape).","Qué hacer tras recuperar: atacar rápido (Counter-Attack) o calmar el juego y ordenarse (Hold Shape).","Was nach Ballgewinn passiert: schnell angreifen (Counter-Attack) oder beruhigen und ordnen (Hold Shape)."]],
+ ["creative-freedom","in","Overview","Creative Freedom","Balanced","CREATIVE_FREEDOM",["Swoboda zawodników. Więcej ekspresji to improwizacja, więcej dyscypliny to trzymanie się planu.","Player freedom. More expressive means improvisation, more disciplined means sticking to the plan.","Libertad de los jugadores. Más expresivo es improvisación; más disciplinado es ceñirse al plan.","Freiheit der Spieler. Expressiver heißt Improvisation, disziplinierter heißt, sich an den Plan zu halten."]],
+ ["time-wasting","in","Overview","Time Wasting","Standard","TIME_WASTING",["Granie na czas. Częściej przy prowadzeniu, rzadziej gdy chcesz grać szybko.","Wasting time. More often when leading, less often when you want to play fast.","Perder tiempo. Más a menudo cuando vas ganando, menos cuando quieres jugar rápido.","Zeitspiel. Öfter bei Führung, seltener, wenn du schnell spielen willst."]],
+ ["play-for-set-pieces","in","Overview","Play For Set Pieces","Keep Ball In Play","PLAY_FOR_SET_PIECES",["Czy celowo szukać stałych fragmentów gry.","Whether to deliberately look for set pieces.","Si buscar a propósito acciones a balón parado.","Ob gezielt Standardsituationen gesucht werden."]],
+ ["build-up-strategy","in","Build-Up","Build-Up Strategy","Balanced","BUILD_UP_STRATEGY",["Wyprowadzenie piłki: krótkimi podaniami przez pressing rywala albo ponad nim.","Building from the back: short passes through the opposition press or over it.","Salida de balón: pases cortos a través de la presión rival o por encima de ella.","Spielaufbau: kurze Pässe durch das gegnerische Pressing oder darüber hinweg."]],
+ ["goal-kicks","in","Build-Up","Goal Kicks","Mixed","GOAL_KICKS",["Rozpoczęcie od bramki: krótko do obrońców albo długo.","Goal kicks: short to the defenders or long.","Saques de puerta: en corto a los defensas o en largo.","Abstöße: kurz zu den Verteidigern oder lang."]],
+ ["gk-distribution","in","Build-Up","GK Distribution","Balanced","GOALKEEPER_DISTRIBUTION",["Do kogo bramkarz zagrywa po złapaniu piłki.","Who the keeper plays to after catching the ball.","A quién juega el portero tras atrapar el balón.","Wen der Torwart nach dem Fangen anspielt."]],
+ ["gk-distribution-speed","in","Build-Up","GK Distribution (Speed)","Balanced","GK_DISTRIBUTION_(SPEED)",["Czy bramkarz wznawia szybko, żeby zacząć kontrę, czy uspokaja grę.","Whether the keeper restarts quickly to start a counter or slows the game down.","Si el portero saca rápido para iniciar la contra o pausa el juego.","Ob der Torwart schnell abwirft, um einen Konter zu starten, oder das Spiel beruhigt."]],
+ ["progress-through","in","Progression","Progress Through","Balanced","PROGRESS_THROUGH",["Którą strefą drużyna przenosi piłkę na połowę rywala.","Which zone the team uses to move the ball into the opposition half.","Por qué zona el equipo lleva el balón al campo rival.","Über welche Zone das Team den Ball in die gegnerische Hälfte bringt."]],
+ ["pass-reception","in","Progression","Pass Reception","Balanced","PASS_RECEPTION",["Podania na wolne pole, w które wbiega kolega, czy do nogi.","Passes into space for a runner, or to feet.","Pases al espacio para que llegue un compañero, o al pie.","Pässe in den Raum für einen Mitspieler oder in den Fuß."]],
+ ["supporting-runs","in","Progression","Supporting Runs","Balanced","SUPPORTING_RUNS",["Po której stronie zawodnicy częściej dobiegają do akcji.","Which side players more often make supporting runs on.","Por qué banda los jugadores acompañan más a menudo la jugada.","Auf welcher Seite Spieler häufiger nachrücken."]],
+ ["patience","in","Final Third","Patience","Standard","PATIENCE",["W ostatniej tercji: wcześnie dośrodkowywać czy wchodzić z piłką w pole karne.","In the final third: cross early or work the ball into the box.","En el último tercio: centrar pronto o entrar con el balón en el área.","Im letzten Drittel: früh flanken oder den Ball in den Strafraum tragen."]],
+ ["dribbling","in","Final Third","Dribbling","Balanced","DRIBBLING",["Jak często zawodnicy próbują mijać rywali.","How often players try to beat their man.","Con qué frecuencia los jugadores intentan regatear.","Wie oft Spieler versuchen, Gegner auszudribbeln."]],
+ ["shots-from-distance","in","Final Third","Shots From Distance","Balanced","SHOTS_FROM_DISTANCE",["Strzały zza pola karnego: częściej czy rzadziej.","Shots from outside the box: more or less often.","Tiros desde fuera del área: más o menos a menudo.","Schüsse von außerhalb des Strafraums: öfter oder seltener."]],
+ ["crossing-style","in","Final Third","Crossing Style","Balanced","CROSSING_STYLE",["Rodzaj dośrodkowań: górne, bite czy niskie.","Type of crosses: floated, whipped or low.","Tipo de centros: bombeados, tensos o rasos.","Art der Flanken: hoch, scharf oder flach."]],
+ ["line-of-engagement","out","Overview","Line of Engagement","Mid Block","LINE_OF_ENGAGEMENT",["Gdzie zaczyna się pressing: wysoko pod bramką rywala, w środku pola czy dopiero przed własnym polem karnym.","Where the press starts: high near the opposition goal, in midfield, or only in front of your own box.","Dónde empieza la presión: arriba cerca de la portería rival, en el centro del campo o solo delante de tu área.","Wo das Pressing beginnt: hoch vor dem gegnerischen Tor, im Mittelfeld oder erst vor dem eigenen Strafraum."]],
+ ["defensive-line","out","Overview","Defensive Line","Standard","DEFENSIVE_LINE",["Jak wysoko stoi linia obrony. Wyżej to mniej miejsca dla rywala w środku, ale więcej za plecami obrońców.","How high the defensive line sits. Higher means less space in midfield for opponents, but more space behind your defenders.","Altura de la línea defensiva. Más alta deja menos espacio al rival en el centro, pero más a la espalda de tus defensas.","Wie hoch die Abwehrlinie steht. Höher heißt weniger Raum für den Gegner im Zentrum, aber mehr Raum hinter deinen Verteidigern."]],
+ ["defensive-line-behaviour","out","Overview","Defensive Line Behaviour","Balanced","DEFENSIVE_LINE_BEHAVIOR",["Czy obrońcy wychodzą do przodu, czy cofają się, gdy rywal atakuje.","Whether defenders step up or drop off when the opponent attacks.","Si los defensas salen hacia delante o retroceden cuando ataca el rival.","Ob die Verteidiger herausrücken oder sich zurückfallen lassen, wenn der Gegner angreift."]],
+ ["trigger-press","out","Overview","Trigger Press","Standard","TRIGGER_PRESS",["Jak chętnie zawodnicy doskakują do rywala z piłką. Częściej to więcej odbiorów, ale i więcej biegania.","How eagerly players close down an opponent on the ball. More often means more recoveries, but also more running.","Con qué ganas los jugadores presionan al rival con balón. Más a menudo da más recuperaciones, pero también más carrera.","Wie entschlossen Spieler den ballführenden Gegner attackieren. Öfter heißt mehr Ballgewinne, aber auch mehr Laufarbeit."]],
+ ["defensive-transition","out","Overview","Defensive Transition","Standard","DEFENSIVE_TRANSITION",["Co robić po stracie piłki: od razu ją odbierać (Counter-Press) czy wrócić na pozycje (Regroup).","What to do after losing the ball: win it back immediately (Counter-Press) or get back into position (Regroup).","Qué hacer tras perder el balón: recuperarlo al instante (Counter-Press) o volver a la posición (Regroup).","Was nach Ballverlust passiert: sofort zurückerobern (Counter-Press) oder in die Positionen zurückkehren (Regroup)."]],
+ ["tackling","out","Overview","Tackling","Standard","TACKLING",["Ostrość odbioru. Ostrzej to więcej odbiorów i więcej kartek.","How hard players tackle. Harder means more ball wins and more cards.","Dureza en la entrada. Más dura da más recuperaciones y más tarjetas.","Härte im Zweikampf. Härter heißt mehr Ballgewinne und mehr Karten."]],
+ ["pressing-trap","out","Pressing","Pressing Trap","Balanced","PRESSING_TRAP",["Gdzie spychać rywala z piłką: do środka czy do linii bocznej.","Where to force the player on the ball: inside or towards the touchline.","Hacia dónde empujar al rival con balón: hacia dentro o hacia la banda.","Wohin der ballführende Gegner gedrängt wird: nach innen oder zur Seitenlinie."]],
+ ["prevent-short-gk-distribution","out","Pressing","Short Goalkeeper Distribution","No","SHORT_GOALKEEPER_DISTRIBUTION",["Blokowanie krótkiego rozegrania bramkarza rywala (Yes = blokuj).","Blocking the opposition keeper's short distribution (Yes = block).","Bloquear la salida en corto del portero rival (Yes = bloquear).","Kurze Abwürfe des gegnerischen Torwarts unterbinden (Yes = unterbinden)."]],
+ ["cross-engagement","out","Wide Areas","Cross Engagement","Balanced","CROSS_ENGAGEMENT",["Czy blokować dośrodkowania, czy pozwalać na nie i bronić w polu karnym.","Whether to block crosses or allow them and defend in the box.","Si bloquear los centros o permitirlos y defender en el área.","Ob Flanken geblockt oder zugelassen und im Strafraum verteidigt werden."]]
+];
+const DEF=Object.fromEntries(TI.map(t=>[t[0],t[4]]));
+const TI_DEFAULT_KEY={"tempo":"NORMAL","line-of-engagement":"STANDARD","play-for-set-pieces":"KEEP_BALL_IN_PLAY"};
+const tiValueKey=(id,label)=> label===DEF[id] ? (TI_DEFAULT_KEY[id]||"DEFAULT") : label.toUpperCase().replace(/[^A-Z0-9]+/g,"_");
+const PI_KEY={"Attacking Width: Sit Narrower":["ATTACKING_WIDTH","SIT_NARROWER"],"Attacking Width: Stay Wider":["ATTACKING_WIDTH","STAY_WIDER"],"Dribbling Direction: Cut Inside With Ball":["DRIBBLING_DIRECTION","CUT_INSIDE_WITH_BALL"],"Passing Risks: Take More Risks":["PASSING_RISKS","TAKE_MORE_RISKS"],"Cross From: Byline":["CROSS_FROM","BYLINE"]};
+const TEMPLATE_BASE={g:"Gegenpress",ip:"4-2-4 DM Wide",oop:"4-2-2-2 DM"};
+const STYLE_CODE={possession:"POSS",press:"PRESS",counter:"COUNTER",direct:"DIRECT",defence:"DEF"};
+
+/* Instrukcje stylów (identyczne we wszystkich 9 presetach danego stylu) + opisy */
+const STYLE={
+ "Catenaccio":{ment:"Defensive",ti:{"passing-directness":"More Direct","tempo":"Lower","attacking-width":"Much Narrower","creative-freedom":"More Disciplined","time-wasting":"More Often","play-for-set-pieces":"Play For Set Pieces","build-up-strategy":"Bypass Press","attacking-transition":"Counter-Attack","defensive-transition":"Regroup","gk-distribution-speed":"Slow Pace Down","line-of-engagement":"Low Block","defensive-line":"Lower","defensive-line-behaviour":"Drop Off More","trigger-press":"Less Often","tackling":"Stay On Feet"},
+  desc:{pl:"Catenaccio: niski blok, dyscyplina, piątka obrońców i kontry wąską grupą zawodników.",en:"Catenaccio: low block, discipline, a back five and counters with a small group of players.",es:"Catenaccio: bloque bajo, disciplina, línea de cinco y contras con pocos jugadores.",de:"Catenaccio: tiefer Block, Disziplin, Fünferkette und Konter mit wenigen Spielern."},
+  watch:{pl:["Czy rywal stwarza czyste sytuacje mimo niskiego bloku (xG przeciwko).","Czy dwóch napastników dostaje piłki po odbiorze – inaczej kontry nie istnieją.","Stałe fragmenty – w tym stylu to ważne źródło goli."],en:["Whether opponents create clear chances despite the low block (xG against).","Whether your two strikers get the ball after you win it – otherwise there are no counters.","Set pieces – an important source of goals in this style."],es:["Si el rival crea ocasiones claras pese al bloque bajo (xG en contra).","Si los dos delanteros reciben el balón tras el robo: si no, no hay contras.","Balón parado: una fuente importante de goles en este estilo."],de:["Ob der Gegner trotz tiefem Block klare Chancen hat (xG gegen).","Ob die beiden Stürmer nach Ballgewinn den Ball bekommen – sonst gibt es keine Konter.","Standards – eine wichtige Torquelle in diesem Stil."]}},
+ "Park The Bus":{ment:"Defensive",ti:{"passing-directness":"More Direct","tempo":"Lower","attacking-width":"Narrower","creative-freedom":"More Disciplined","time-wasting":"More Often","play-for-set-pieces":"Play For Set Pieces","build-up-strategy":"Bypass Press","pass-reception":"Pass Into Space","patience":"Hit Early Crosses","defensive-transition":"Regroup","goal-kicks":"Long","gk-distribution-speed":"Slow Pace Down","line-of-engagement":"Low Block","defensive-line":"Lower","defensive-line-behaviour":"Drop Off More","trigger-press":"Less Often","tackling":"Get Stuck In","pressing-trap":"Trap Outside"},
+  desc:{pl:"Park The Bus: autobus przed bramką. Minimum ryzyka, długie wybicia i walka o każdy punkt.",en:"Park the bus: parked in front of goal. Minimal risk, long clearances and fighting for every point.",es:"Park the bus: autobús delante de la portería. Riesgo mínimo, despejes largos y lucha por cada punto.",de:"Park the Bus: Bollwerk vor dem Tor. Minimales Risiko, lange Befreiungsschläge und Kampf um jeden Punkt."},
+  watch:{pl:["Liczba strzałów rywala z pola karnego – jeśli rośnie, linia jest za nisko.","Czy wygrywasz drugie piłki po długich wybiciach.","Kartki – ostry odbiór w niskim bloku blisko własnego pola karnego."],en:["Opposition shots from inside the box – if they rise, your line is too deep.","Whether you win second balls after long clearances.","Cards – aggressive tackling in a low block close to your own box."],es:["Tiros del rival desde dentro del área: si aumentan, la línea está demasiado baja.","Si ganas las segundas jugadas tras los despejes largos.","Tarjetas: entradas duras en bloque bajo cerca de tu área."],de:["Gegnerische Schüsse aus dem Strafraum – nehmen sie zu, steht die Linie zu tief.","Ob du zweite Bälle nach langen Befreiungsschlägen gewinnst.","Karten – harte Zweikämpfe im tiefen Block nahe dem eigenen Strafraum."]}},
+ "Direct Counter Attack":{ment:"Cautious",ti:{"passing-directness":"More Direct","tempo":"Higher","build-up-strategy":"Bypass Press","pass-reception":"Pass Into Space","attacking-transition":"Counter-Attack","gk-distribution-speed":"Distribute Quickly","line-of-engagement":"Low Block","defensive-line":"Lower","defensive-line-behaviour":"Drop Off More","trigger-press":"More Often","tackling":"Get Stuck In"},
+  desc:{pl:"Bezpośrednia kontra: niski blok, odbiór i szybkie, długie podania w wolne pole za obronę rywala.",en:"Direct counter: low block, win the ball and play fast, long passes into the space behind the opposition defence.",es:"Contra directa: bloque bajo, robo y pases largos y rápidos al espacio a la espalda de la defensa rival.",de:"Direkter Konter: tiefer Block, Ballgewinn und schnelle, lange Pässe in den Raum hinter die gegnerische Abwehr."},
+  watch:{pl:["Czy po odbiorze piłka szybko trafia do przodu (mało podań poprzecznych).","Szybkość skrzydłowych i napastnika – ten styl na niej stoi.","Mecze z rywalem, który sam się broni nisko – wtedy kontra nie ma miejsca."],en:["Whether the ball goes forward quickly after you win it (few sideways passes).","Pace of the wingers and striker – this style depends on it.","Games against a side that also sits deep – then there's no space to counter."],es:["Si el balón va rápido hacia delante tras el robo (pocos pases horizontales).","Velocidad de extremos y delantero: este estilo depende de ella.","Partidos contra un rival que también se encierra: entonces no hay espacio para la contra."],de:["Ob der Ball nach Ballgewinn schnell nach vorn geht (wenige Querpässe).","Tempo der Flügelspieler und des Stürmers – dieser Stil lebt davon.","Spiele gegen ein Team, das selbst tief steht – dann fehlt der Raum für Konter."]}},
+ "Fluid Counter Attack":{ment:"Cautious",ti:{"passing-directness":"Shorter","tempo":"Higher","pass-reception":"Pass Into Space","dribbling":"Encourage","attacking-transition":"Counter-Attack","defensive-transition":"Counter-Press","gk-distribution-speed":"Distribute Quickly","line-of-engagement":"Mid Block","defensive-line":"Lower","defensive-line-behaviour":"Drop Off More","trigger-press":"More Often","tackling":"Get Stuck In"},
+  desc:{pl:"Płynna kontra: średni blok, odbiór w środku pola i szybkie, kombinacyjne ataki krótkimi podaniami.",en:"Fluid counter: mid block, winning the ball in midfield and fast combination attacks with short passes.",es:"Contra fluida: bloque medio, robo en el centro del campo y ataques rápidos combinativos con pases cortos.",de:"Fließender Konter: mittlerer Block, Ballgewinn im Mittelfeld und schnelle Kombinationsangriffe mit kurzen Pässen."},
+  watch:{pl:["Gdzie odbierasz piłkę – najlepiej w środkowej tercji.","Czy pomocnicy dobiegają do kontry, czy napastnik zostaje sam.","Kondycja po 60. minucie – kontrpressing kosztuje."],en:["Where you win the ball – ideally in the middle third.","Whether midfielders join the counter or the striker is left alone.","Fitness after the 60th minute – counter-pressing is costly."],es:["Dónde recuperas el balón: idealmente en el tercio medio.","Si los centrocampistas se suman a la contra o el delantero se queda solo.","Condición física a partir del minuto 60: la contrapresión cuesta."],de:["Wo du den Ball gewinnst – idealerweise im mittleren Drittel.","Ob die Mittelfeldspieler beim Konter nachrücken oder der Stürmer allein bleibt.","Kondition nach der 60. Minute – Gegenpressing kostet Kraft."]}},
+ "Gegenpress":{ment:"Balanced",ti:{"tempo":"Much Higher","attacking-width":"Narrower","time-wasting":"Less Often","build-up-strategy":"Play Through Press","attacking-transition":"Counter-Attack","defensive-transition":"Counter-Press","gk-distribution":"Centre-Backs","line-of-engagement":"High Press","defensive-line":"Higher","defensive-line-behaviour":"Step Up More","trigger-press":"Much More Often","prevent-short-gk-distribution":"Yes"},
+  desc:{pl:"Gegenpress: wysoki pressing i natychmiastowy odbiór po stracie. Rywal nie ma czasu na rozegranie.",en:"Gegenpress: a high press and instant ball recovery after losing it. Opponents get no time to build.",es:"Gegenpress: presión alta y recuperación inmediata tras pérdida. El rival no tiene tiempo para construir.",de:"Gegenpress: hohes Pressing und sofortige Rückeroberung nach Ballverlust. Der Gegner hat keine Zeit für den Spielaufbau."},
+  watch:{pl:["Kondycja – zmiany około 60. minuty, rotacja przy dwóch meczach w tygodniu.","Gole tracone po długich podaniach za linię obrony.","Liczba odbiorów na połowie rywala – to cel tego stylu."],en:["Fitness – subs around the 60th minute, rotation when there are two games a week.","Goals conceded from long balls in behind your defence.","Ball recoveries in the opposition half – that is the aim of this style."],es:["Condición física: cambios hacia el minuto 60 y rotación con dos partidos por semana.","Goles encajados por balones largos a la espalda de la defensa.","Recuperaciones en campo rival: es el objetivo de este estilo."],de:["Kondition – Wechsel um die 60. Minute, Rotation bei zwei Spielen pro Woche.","Gegentore nach langen Bällen hinter die Abwehr.","Ballgewinne in der gegnerischen Hälfte – das ist das Ziel dieses Stils."]}},
+ "Control Possession":{ment:"Positive",ti:{"passing-directness":"Shorter","tempo":"Lower","time-wasting":"Less Often","build-up-strategy":"Play Through Press","patience":"Work Ball Into Box","defensive-transition":"Counter-Press","goal-kicks":"Short","gk-distribution":"Centre-Backs","line-of-engagement":"High Press","defensive-line":"Higher","trigger-press":"More Often","prevent-short-gk-distribution":"Yes"},
+  desc:{pl:"Kontrola posiadania: cierpliwe krótkie podania, rozegranie od bramkarza i szybki odbiór po stracie.",en:"Control Possession: patient short passing, build-up from the keeper and quick recovery after losing the ball.",es:"Control Possession: pases cortos con paciencia, salida desde el portero y recuperación rápida tras pérdida.",de:"Control Possession: geduldiges Kurzpassspiel, Spielaufbau vom Torwart und schnelle Rückeroberung nach Ballverlust."},
+  watch:{pl:["Posiadanie powyżej 55% i czy przekłada się na strzały.","Straty na własnej połowie przy rozegraniu od tyłu.","Kontry rywala po stracie – wtedy pomaga Counter-Press."],en:["Possession above 55% and whether it turns into shots.","Losing the ball in your own half when building from the back.","Opposition counters after you lose the ball – Counter-Press helps here."],es:["Posesión por encima del 55 % y si se traduce en tiros.","Pérdidas en campo propio al salir desde atrás.","Contras del rival tras perder el balón: aquí ayuda Counter-Press."],de:["Ballbesitz über 55 % und ob daraus Schüsse werden.","Ballverluste in der eigenen Hälfte beim Aufbau von hinten.","Gegenstöße nach Ballverlust – hier hilft Counter-Press."]}},
+ "Tiki-Taka":{ment:"Positive",ti:{"passing-directness":"Much Shorter","tempo":"Much Lower","time-wasting":"Less Often","build-up-strategy":"Play Through Press","pass-reception":"Pass To Feet","patience":"Work Ball Into Box","dribbling":"Discourage","shots-from-distance":"Discourage","crossing-style":"Low Crosses","attacking-transition":"Hold Shape","defensive-transition":"Counter-Press","goal-kicks":"Short","gk-distribution":"Centre-Backs","gk-distribution-speed":"Distribute Quickly","line-of-engagement":"High Press","defensive-line":"Higher","trigger-press":"More Often","prevent-short-gk-distribution":"Yes"},
+  desc:{pl:"Tiki-taka: bardzo krótkie podania do nogi w wolnym tempie, piłka cały czas przy drużynie.",en:"Tiki-taka: very short passes to feet at a slow tempo, the team keeps the ball all the time.",es:"Tiki-taka: pases muy cortos al pie a ritmo lento; el balón siempre en poder del equipo.",de:"Tiki-Taka: sehr kurze Pässe in den Fuß bei niedrigem Tempo, der Ball bleibt ständig in den eigenen Reihen."},
+  watch:{pl:["Czy posiadanie zamienia się na sytuacje (xG), a nie tylko na podania.","Technika i opanowanie zawodników – słabsi technicznie gubią piłkę.","Mecze z niskim blokiem rywala – bądź cierpliwy, nie zmieniaj od razu taktyki."],en:["Whether possession turns into chances (xG), not just passes.","Your players' technique and composure – less technical players lose the ball.","Games against a deep block – be patient, don't change the tactic straight away."],es:["Si la posesión se convierte en ocasiones (xG) y no solo en pases.","Técnica y serenidad de los jugadores: los menos técnicos pierden el balón.","Partidos contra un bloque bajo: ten paciencia, no cambies la táctica enseguida."],de:["Ob aus Ballbesitz Chancen (xG) werden und nicht nur Pässe.","Technik und Gelassenheit der Spieler – technisch schwächere verlieren den Ball.","Spiele gegen einen tiefen Block – geduldig bleiben, Taktik nicht sofort ändern."]}},
+ "Vertical Tiki-Taka":{ment:"Balanced",ti:{"passing-directness":"Shorter","tempo":"Lower","attacking-width":"Much Narrower","creative-freedom":"More Expressive","time-wasting":"Less Often","build-up-strategy":"Play Through Press","progress-through":"Middle","supporting-runs":"Both Flanks","patience":"Work Ball Into Box","crossing-style":"Low Crosses","attacking-transition":"Counter-Attack","defensive-transition":"Counter-Press","goal-kicks":"Short","gk-distribution":"Centre-Backs","line-of-engagement":"High Press","defensive-line":"Higher","trigger-press":"More Often","prevent-short-gk-distribution":"Yes"},
+  desc:{pl:"Wertykalna tiki-taka: krótkie podania środkiem i szybkie przejście do przodu, wąskie ustawienie i wysoki pressing.",en:"Vertical tiki-taka: short passes through the middle with a quick move forward, a narrow shape and a high press.",es:"Tiki-taka vertical: pases cortos por el centro con transición rápida hacia delante, forma estrecha y presión alta.",de:"Vertikales Tiki-Taka: kurze Pässe durchs Zentrum mit schnellem Umschalten nach vorn, enge Formation und hohes Pressing."},
+  watch:{pl:["Czy gra środkiem nie zapycha się – jeśli tak, boczni muszą dawać szerokość.","Odbiory na połowie rywala po stracie.","Kondycja środkowych pomocników."],en:["Whether play through the middle gets clogged – if so, the full-backs must provide width.","Ball recoveries in the opposition half after losing it.","Fitness of the central midfielders."],es:["Si el juego por el centro se atasca: en ese caso los laterales deben dar amplitud.","Recuperaciones en campo rival tras pérdida.","Condición física de los centrocampistas."],de:["Ob das Spiel durchs Zentrum verstopft – dann müssen die Außenverteidiger Breite geben.","Ballgewinne in der gegnerischen Hälfte nach Ballverlust.","Kondition der zentralen Mittelfeldspieler."]}},
+ "Wingplay":{ment:"Balanced",ti:{"passing-directness":"More Direct","tempo":"Higher","attacking-width":"Much Wider","progress-through":"Both Flanks","attacking-transition":"Counter-Attack","gk-distribution":"Full-Backs","trigger-press":"More Often","pressing-trap":"Trap Outside"},
+  desc:{pl:"Gra skrzydłami: szerokie ustawienie, piłka szybko na boki i dośrodkowania w pole karne.",en:"Wing play: a wide shape, getting the ball out wide quickly and crosses into the box.",es:"Juego por bandas: forma amplia, balón rápido a las bandas y centros al área.",de:"Flügelspiel: breite Formation, Ball schnell auf die Flügel und Flanken in den Strafraum."},
+  watch:{pl:["Celność dośrodkowań i gra głową napastników.","Czy skrzydłowi wygrywają pojedynki 1 na 1.","Kontry rywala środkiem, gdy boczni są wysoko."],en:["Crossing accuracy and your strikers' heading.","Whether your wingers win their 1-v-1 duels.","Opposition counters through the middle when your full-backs are high."],es:["Precisión de los centros y juego aéreo de los delanteros.","Si los extremos ganan los duelos uno contra uno.","Contras del rival por el centro cuando los laterales están arriba."],de:["Flankengenauigkeit und Kopfballspiel der Stürmer.","Ob die Flügelspieler ihre 1-gegen-1-Duelle gewinnen.","Gegenstöße durchs Zentrum, wenn die Außenverteidiger hoch stehen."]}},
+ "Route One":{ment:"Balanced",ti:{"passing-directness":"Much More Direct","tempo":"Higher","creative-freedom":"More Disciplined","play-for-set-pieces":"Play For Set Pieces","build-up-strategy":"Bypass Press","patience":"Hit Early Crosses","attacking-transition":"Counter-Attack","defensive-transition":"Regroup","goal-kicks":"Long","line-of-engagement":"Mid Block","defensive-line":"Lower","tackling":"Get Stuck In","pressing-trap":"Trap Outside"},
+  desc:{pl:"Route One: długie podania na napastników, walka o drugą piłkę i stałe fragmenty.",en:"Route One: long balls to the strikers, fighting for second balls and set pieces.",es:"Route One: balones largos a los delanteros, lucha por la segunda jugada y balón parado.",de:"Route One: lange Bälle auf die Stürmer, Kampf um zweite Bälle und Standards."},
+  watch:{pl:["Czy napastnicy wygrywają główki (Target Forward musi być wysoki i silny).","Drugie piłki po długich podaniach.","Posiadanie będzie niskie – to normalne w tym stylu."],en:["Whether your strikers win headers (the Target Forward must be tall and strong).","Second balls after long passes.","Possession will be low – that's normal for this style."],es:["Si los delanteros ganan los balones aéreos (el Target Forward debe ser alto y fuerte).","Segundas jugadas tras los balones largos.","La posesión será baja: es normal en este estilo."],de:["Ob die Stürmer Kopfballduelle gewinnen (der Target Forward muss groß und stark sein).","Zweite Bälle nach langen Pässen.","Der Ballbesitz wird niedrig sein – das ist bei diesem Stil normal."]}}
+};
+/* Trenerzy: interpretacja stylu w ramach ustawień FM27. roles: [pozycja z piłką, rola, zadanie] */
+const COACHES=[
+ {id:"guardiola",name:"Pep Guardiola",tag:"GUARDIOLA",form:"433",style:"possession",width:"balanced",oop:"4-1-4-1 DM",ti:{"trigger-press":"Much More Often"},roles:[],
+  desc:{pl:"gra pozycyjna: krótkie podania, odwróceni boczni obrońcy, wysoki pressing i szybki odbiór po stracie.",en:"positional play: short passing, inverted full-backs, a high press and quick recovery after losing the ball.",es:"juego de posición: pase corto, laterales por dentro, presión alta y recuperación rápida tras pérdida.",de:"Positionsspiel: Kurzpassspiel, einrückende Außenverteidiger, hohes Pressing und schnelle Rückeroberung."}},
+ {id:"slot",name:"Arne Slot",tag:"SLOT",form:"4231",style:"possession",width:"balanced",oop:"4-4-1-1 2DM",ti:{"passing-directness":"Standard","tempo":"Normal","trigger-press":"Much More Often"},roles:[],
+  desc:{pl:"kontrola z intensywnością: cierpliwe budowanie akcji, wysoki pressing i uporządkowane przejścia.",en:"control with intensity: patient build-up, a high press and well-organised transitions.",es:"control con intensidad: construcción paciente, presión alta y transiciones ordenadas.",de:"Kontrolle mit Intensität: geduldiger Aufbau, hohes Pressing und geordnete Umschaltmomente."}},
+ {id:"amorim",name:"Ruben Amorim",tag:"AMORIM",form:"5221",style:"possession",width:"wide",oop:"5-2-2-1 DM AM",ti:{"attacking-width":"Wider"},roles:[["WBR","Advanced Wing-Back","A"],["WBL","Advanced Wing-Back","A"]],
+  desc:{pl:"struktura 3-4-2-1: trójka obrońców, wahadłowi dający szerokość i dwóch ofensywnych za napastnikiem.",en:"3-4-2-1 structure: a back three, wing-backs providing width and two attacking midfielders behind the striker.",es:"estructura 3-4-2-1: línea de tres, carrileros que dan amplitud y dos mediapuntas detrás del delantero.",de:"3-4-2-1-Struktur: Dreierkette, Schienenspieler für die Breite und zwei Offensive hinter dem Stürmer."}},
+ {id:"dezerbi",name:"Roberto De Zerbi",tag:"DE ZERBI",form:"4231",style:"possession",width:"wide",oop:"4-3-3 DM Wide",ti:{"build-up-strategy":"Play Through Press","goal-kicks":"Short","gk-distribution":"Centre-Backs","gk-distribution-speed":"Slow Pace Down","pass-reception":"Pass To Feet"},roles:[["DR","Inside Full-Back","D"],["AML","Winger","S"]],
+  desc:{pl:"prowokowanie pressingu: bramkarz i obrońcy wciągają rywala, a potem szybko grają wokół niego; wąscy boczni, szerocy skrzydłowi.",en:"baiting the press: keeper and defenders draw the opponent in, then play quickly around them; narrow full-backs, wide wingers.",es:"provocar la presión: portero y defensas atraen al rival y luego juegan rápido a su alrededor; laterales por dentro, extremos abiertos.",de:"Pressing provozieren: Torwart und Verteidiger locken den Gegner an und spielen dann schnell um ihn herum; enge Außenverteidiger, breite Flügel."}},
+ {id:"simeone",name:"Diego Simeone",tag:"SIMEONE",form:"442",style:"counter",width:"balanced",oop:"4-4-2",ti:{"creative-freedom":"More Disciplined","line-of-engagement":"Mid Block","defensive-line":"Lower","tackling":"Get Stuck In"},roles:[],
+  desc:{pl:"zwięzła, agresywna obrona: 4-4-2, zwarty blok, dyscyplina i groźne kontry.",en:"compact, aggressive defending: 4-4-2, a tight block, discipline and dangerous counters.",es:"defensa compacta y agresiva: 4-4-2, bloque junto, disciplina y contras peligrosas.",de:"kompakte, aggressive Defensive: 4-4-2, enger Block, Disziplin und gefährliche Konter."}},
+ {id:"gasperini",name:"Gian Piero Gasperini",tag:"GASPERINI",form:"523",style:"press",width:"balanced",oop:"5-2-3 DM Wide",ti:{"defensive-line":"Much Higher","trigger-press":"Much More Often","tackling":"Get Stuck In"},roles:[["DCR","Overlapping Centre-Back","A"],["DCL","Overlapping Centre-Back","A"],["WBL","Advanced Wing-Back","A"]],
+  desc:{pl:"wysoka intensywność: trójka obrońców wychodzących do przodu, wysoka linia, agresywny pressing i aktywni wahadłowi.",en:"high intensity: a back three that steps forward, a high line, aggressive pressing and active wing-backs.",es:"alta intensidad: línea de tres que sale hacia delante, línea alta, presión agresiva y carrileros activos.",de:"hohe Intensität: aufrückende Dreierkette, hohe Linie, aggressives Pressing und aktive Schienenspieler."}},
+ {id:"kovac",name:"Niko Kovač",tag:"KOVAC",form:"5221",style:"counter",width:"balanced",oop:"5-2-2-1 DM AM",ti:{},roles:[["WBR","Advanced Wing-Back","A"]],
+  desc:{pl:"pragmatyczna kontra: kompaktowe 3-4-2-1, trudna do przełamania obrona, szybkie przejścia i swoboda wahadłowych.",en:"pragmatic counter: a compact 3-4-2-1, hard to break down, quick transitions and freedom for the wing-backs.",es:"contra pragmática: 3-4-2-1 compacto, difícil de superar, transiciones rápidas y libertad para los carrileros.",de:"pragmatischer Konter: kompaktes 3-4-2-1, schwer zu knacken, schnelles Umschalten und Freiheit für die Schienenspieler."}},
+ {id:"glasner",name:"Oliver Glasner",tag:"GLASNER",form:"5221",style:"counter",width:"balanced",oop:"5-2-3 DM Wide",ti:{"pressing-trap":"Trap Outside"},roles:[],
+  desc:{pl:"efektywność w tranzycji: 3-4-2-1 z piłką, 5-2-3 bez niej, pressing spychający rywala do boku i szybkie ataki.",en:"transition efficiency: 3-4-2-1 in possession, 5-2-3 without, pressing that forces play wide and quick attacks.",es:"eficacia en transición: 3-4-2-1 con balón, 5-2-3 sin él, presión que empuja al rival a la banda y ataques rápidos.",de:"Effizienz im Umschalten: 3-4-2-1 mit Ball, 5-2-3 ohne, Pressing, das den Gegner nach außen drängt, und schnelle Angriffe."}},
+ {id:"iraola",name:"Andoni Iraola",tag:"IRAOLA",form:"4231",style:"press",width:"balanced",oop:"4-4-1-1 2DM",ti:{"passing-directness":"More Direct","pass-reception":"Pass Into Space","tackling":"Get Stuck In"},roles:[],
+  desc:{pl:"bardzo bezpośredni pressing: mało podań przed strzałem, agresywny odbiór wysoko i szybkie ataki.",en:"very direct pressing: few passes before a shot, aggressive high ball-winning and fast attacks.",es:"presión muy directa: pocos pases antes del tiro, robo agresivo arriba y ataques rápidos.",de:"sehr direktes Pressing: wenige Pässe vor dem Abschluss, aggressive Balleroberung weit vorn und schnelle Angriffe."}},
+ {id:"hoeness",name:"Sebastian Hoeneß",tag:"HOENESS",form:"4231",style:"direct",width:"wide",oop:"4-4-1-1 2DM",ti:{"crossing-style":"Whipped Crosses","line-of-engagement":"High Press","defensive-line":"Higher"},roles:[["DL","Wing-Back","S"]],
+  desc:{pl:"ofensywa oparta na szerokości: wysunięci boczni obrońcy, dużo dośrodkowań i agresywny pressing.",en:"attacking football built on width: advanced full-backs, lots of crosses and aggressive pressing.",es:"fútbol ofensivo basado en la amplitud: laterales adelantados, muchos centros y presión agresiva.",de:"Offensivfußball über die Breite: hoch stehende Außenverteidiger, viele Flanken und aggressives Pressing."}},
+ {id:"enrique",name:"Luis Enrique",tag:"ENRIQUE",form:"433",style:"possession",width:"balanced",oop:"4-3-3 DM Wide",ti:{"trigger-press":"Much More Often","creative-freedom":"More Expressive"},roles:[],
+  desc:{pl:"posiadanie plus gegenpressing: dominacja przy piłce, wysoki odbiór i swoboda w ataku.",en:"possession plus gegenpressing: dominance on the ball, high recoveries and freedom in attack.",es:"posesión más gegenpressing: dominio con balón, recuperaciones arriba y libertad en ataque.",de:"Ballbesitz plus Gegenpressing: Dominanz am Ball, hohe Ballgewinne und Freiheit im Angriff."}},
+ {id:"ancelotti",name:"Carlo Ancelotti",tag:"ANCELOTTI",form:"4231",style:"counter",width:"balanced",oop:"4-4-1-1 2DM",ti:{"creative-freedom":"More Expressive"},roles:[["AMC","Free Role","A"]],
+  desc:{pl:"elastyczność pod gwiazdy: zrównoważona taktyka, swoboda dla najlepszych i groźna kontra.",en:"flexibility around the stars: a balanced setup, freedom for the best players and a dangerous counter.",es:"flexibilidad en torno a las estrellas: planteamiento equilibrado, libertad para los mejores y contra peligrosa.",de:"Flexibilität rund um die Stars: ausgewogene Ausrichtung, Freiheit für die Besten und gefährliche Konter."}},
+ {id:"mourinho",name:"José Mourinho",tag:"MOURINHO",form:"4231",style:"counter",width:"balanced",oop:"4-4-1-1 2DM",ti:{"line-of-engagement":"Low Block","creative-freedom":"More Disciplined","time-wasting":"More Often"},roles:[],
+  desc:{pl:"defensywny realizm: zwarty niski blok, cierpliwość bez piłki i zabójcze kontry.",en:"defensive realism: a compact low block, patience out of possession and lethal counters.",es:"realismo defensivo: bloque bajo compacto, paciencia sin balón y contras letales.",de:"defensiver Realismus: kompakter tiefer Block, Geduld gegen den Ball und tödliche Konter."}},
+ {id:"fonseca",name:"Paulo Fonseca",tag:"FONSECA",form:"4231",style:"possession",width:"balanced",oop:"4-3-3 DM Wide",ti:{"creative-freedom":"More Expressive"},roles:[["DR","Inside Wing-Back","D"]],
+  desc:{pl:"ofensywne posiadanie: budowanie od bramkarza i boczni obrońcy wchodzący do środka pola.",en:"attacking possession: building from the keeper and full-backs stepping into midfield.",es:"posesión ofensiva: salida desde el portero y laterales que entran al centro del campo.",de:"offensiver Ballbesitz: Aufbau vom Torwart und Außenverteidiger, die ins Mittelfeld einrücken."}},
+ {id:"fabregas",name:"Cesc Fàbregas",tag:"FABREGAS",form:"4231",style:"possession",width:"narrow",oop:"4-2-2-2 DM",ti:{"progress-through":"Middle","trigger-press":"Much More Often","tackling":"Get Stuck In"},roles:[],
+  desc:{pl:"cierpliwe rozegranie i pressing: rotujący podwójny pivot, podania przez środek, po stracie agresywne 4-4-2.",en:"patient build-up and pressing: a rotating double pivot, passes through the middle, an aggressive 4-4-2 after losing the ball.",es:"construcción paciente y presión: doble pivote que rota, pases por el centro y 4-4-2 agresivo tras pérdida.",de:"geduldiger Aufbau und Pressing: rotierende Doppelsechs, Pässe durchs Zentrum, nach Ballverlust aggressives 4-4-2."}}
+];
+const MENT=["Very Defensive","Defensive","Cautious","Balanced","Positive","Attacking","Very Attacking"];
+
+/* Wnioski z testów wersji próbnej FM27 (5 taktyk, 93–102 pkt): [id, wartość, pomiń gdy] */
+const ADV_TI=[
+ ["tempo","Much Higher",c=>c.style==="possession"],
+ ["attacking-width","Much Narrower",c=>c.width==="wide"],
+ ["dribbling","Encourage",()=>false],
+ ["shots-from-distance","Discourage",()=>false],
+ ["crossing-style","Low Crosses",c=>c.width==="wide"],
+ ["defensive-transition","Counter-Press",()=>false],
+ ["line-of-engagement","High Press",()=>false],
+ ["defensive-line","Lower",()=>false],
+ ["trigger-press","Much More Often",()=>false],
+ ["tackling","Get Stuck In",()=>false],
+ ["prevent-short-gk-distribution","Yes",()=>false],
+ ["cross-engagement","Invite Crosses",()=>false]
+];
+
+/* Role: [skrót, pl, en, es, de] */
+const ROLE={
+"Goalkeeper":["GK","Klasyczny bramkarz: broni i wznawia bez ryzyka.","Classic keeper: saves and restarts play without risk.","Portero clásico: para y saca sin riesgos.","Klassischer Torwart: hält und spielt ohne Risiko ab."],
+"Ball-Playing Goalkeeper":["BPGK","Bramkarz rozgrywający krótko do obrońców, pierwszy punkt akcji.","Keeper who plays short to the defenders – the first link in an attack.","Portero que juega en corto con los defensas, primer pase de la jugada.","Torwart, der kurz zu den Verteidigern spielt – erste Station des Aufbaus."],
+"No-Nonsense Goalkeeper":["NNGK","Bramkarz bez ryzyka: wybija daleko.","Safety-first keeper: kicks it long.","Portero sin riesgos: despeja en largo.","Torwart ohne Risiko: schlägt lang ab."],
+"Sweeper Keeper":["SK","Wychodzi z bramki i asekuruje przestrzeń za linią obrony.","Comes off his line and covers the space behind the defence.","Sale de la portería y cubre el espacio a la espalda de la defensa.","Verlässt das Tor und sichert den Raum hinter der Abwehr."],
+"Line-Holding Keeper":["LHK","Zostaje na linii bramkowej, nie wychodzi do piłek.","Stays on his line and doesn't come out for balls.","Se queda bajo palos, no sale a por balones.","Bleibt auf der Linie, kommt nicht heraus."],
+"Centre-Back":["CB","Stoper: krycie, odbiór i proste podania.","Centre-back: marking, tackling and simple passes.","Central: marcaje, entrada y pases sencillos.","Innenverteidiger: Deckung, Zweikampf, einfache Pässe."],
+"Ball-Playing Centre-Back":["BPCB","Stoper rozgrywający: wyprowadza piłkę i gra do przodu.","Ball-playing defender: carries the ball out and passes forward.","Central con salida: conduce el balón y juega hacia delante.","Spielstarker Innenverteidiger: trägt den Ball heraus und spielt nach vorn."],
+"No-Nonsense Centre-Back":["NNCB","Stoper bez ryzyka: wybija, nie rozgrywa.","Safety-first defender: clears it, doesn't build play.","Central expeditivo: despeja, no construye.","Kompromissloser Verteidiger: klärt, baut nicht auf."],
+"Wide Centre-Back":["WCB","Boczny stoper w trójce, wychodzi do boku i wspiera skrzydło.","Outside centre-back in a back three, steps out wide to support the flank.","Central exterior en línea de tres, abre a la banda y apoya.","Halbverteidiger in der Dreierkette, rückt nach außen und unterstützt die Seite."],
+"Covering Centre-Back":["CCB","Stoper asekurujący: zostaje za partnerem i zbiera piłki za linią.","Covering defender: drops behind his partner and sweeps up balls in behind.","Central de cobertura: se queda detrás del compañero y barre los balones a la espalda.","Absichernder Verteidiger: bleibt hinter dem Partner und räumt Bälle hinter der Linie ab."],
+"Stopping Centre-Back":["STCB","Wychodzi do napastnika i przerywa grę tyłem do bramki.","Steps out to the striker and stops him playing with his back to goal.","Sale al delantero y corta su juego de espaldas.","Rückt zum Stürmer heraus und unterbindet sein Spiel mit dem Rücken zum Tor."],
+"Overlapping Centre-Back":["OCB","Boczny stoper, który z piłką wychodzi do przodu i dołącza do ataku.","Outside centre-back who carries the ball forward and joins attacks.","Central exterior que sube con el balón y se suma al ataque.","Halbverteidiger, der mit Ball aufrückt und sich in den Angriff einschaltet."],
+"Stopping Wide Centre-Back":["SWCB","Boczny stoper wychodzący do rywala przed linię obrony.","Outside centre-back who steps up to the opponent ahead of the line.","Central exterior que sale al rival por delante de la línea.","Halbverteidiger, der vor der Linie auf den Gegner herausrückt."],
+"Full-Back":["FB","Boczny obrońca: dołącza do ataku z umiarem, pilnuje skrzydła.","Full-back: joins the attack in moderation and guards the flank.","Lateral: se suma al ataque con mesura y vigila la banda.","Außenverteidiger: schaltet sich maßvoll ein und sichert die Seite."],
+"Inside Full-Back":["IFB","Przy rozegraniu zostaje obok stoperów i tworzy trójkę z tyłu.","Stays alongside the centre-backs in build-up to form a back three.","En la salida se queda junto a los centrales formando una línea de tres.","Bleibt im Aufbau neben den Innenverteidigern und bildet eine Dreierkette."],
+"Pressing Full-Back":["PRFB","Agresywnie doskakuje do skrzydłowego rywala.","Aggressively closes down the opposition winger.","Presiona con agresividad al extremo rival.","Attackiert den gegnerischen Flügelspieler aggressiv."],
+"Holding Full-Back":["HFB","Trzyma linię obrony, nie wychodzi wysoko do pressingu.","Holds the defensive line and doesn't push up to press.","Mantiene la línea defensiva, no sube a presionar.","Hält die Abwehrlinie, rückt nicht zum Pressing heraus."],
+"Wing-Back":["WB","Wahadłowy: daje szerokość w ataku i wraca do obrony.","Wing-back: provides width in attack and tracks back.","Carrilero: da amplitud en ataque y vuelve a defender.","Schienenspieler: gibt Breite im Angriff und arbeitet zurück."],
+"Advanced Wing-Back":["AWB","Wahadłowy grający jak skrzydłowy, bardzo wysoko.","Wing-back who plays like a winger, very high up.","Carrilero que juega como extremo, muy arriba.","Schienenspieler, der wie ein Flügelstürmer sehr hoch spielt."],
+"Inside Wing-Back":["IWB","Wahadłowy schodzący do środka pola przy rozegraniu.","Wing-back who moves into midfield during build-up.","Carrilero que se mete en el centro del campo en la salida.","Schienenspieler, der im Aufbau ins Mittelfeld einrückt."],
+"Playmaking Wing-Back":["PLWB","Wahadłowy-rozgrywający: schodzi do środka i kreuje.","Playmaking wing-back: comes inside and creates.","Carrilero organizador: se mete por dentro y crea juego.","Spielmachender Schienenspieler: rückt ein und kreiert."],
+"Pressing Wing-Back":["PRWB","Wahadłowy agresywnie doskakujący do rywala.","Wing-back who aggressively closes down opponents.","Carrilero que presiona con agresividad al rival.","Schienenspieler, der Gegner aggressiv attackiert."],
+"Holding Wing-Back":["HWB","Wahadłowy, który bez piłki zostaje w linii obrony.","Wing-back who stays in the back line out of possession.","Carrilero que sin balón se queda en la línea defensiva.","Schienenspieler, der gegen den Ball in der Abwehrkette bleibt."],
+"Defensive Midfielder":["DM","Osłania obronę, odbiera i oddaje prosto.","Screens the defence, wins the ball and passes simply.","Protege la defensa, recupera y juega sencillo.","Schirmt die Abwehr ab, gewinnt Bälle und spielt einfach."],
+"Deep-Lying Playmaker":["DLP","Rozgrywający sprzed obrony, dyktuje tempo.","Playmaker in front of the defence who dictates the tempo.","Organizador por delante de la defensa, marca el ritmo.","Spielmacher vor der Abwehr, gibt das Tempo vor."],
+"Box-to-Box Midfielder":["BBM","Biega od pola do pola: odbiera i dołącza do ataku. Wymaga kondycji.","Runs box to box: wins the ball and joins attacks. Needs stamina.","Va de área a área: recupera y se suma al ataque. Necesita resistencia.","Läuft von Strafraum zu Strafraum: gewinnt Bälle und geht mit nach vorn. Braucht Ausdauer."],
+"Box-to-Box Playmaker":["BBP","Box-to-box z zadaniami rozgrywającego.","Box-to-box midfielder with playmaking duties.","Box-to-box con tareas de organización.","Box-to-Box-Spieler mit Spielmacheraufgaben."],
+"Dropping Defensive Midfielder":["DDM","Bez piłki cofa się między stoperów i tworzy piątkę z tyłu.","Out of possession drops between the centre-backs to form a back five.","Sin balón se mete entre los centrales y forma una línea de cinco.","Lässt sich gegen den Ball zwischen die Innenverteidiger fallen – Fünferkette."],
+"Pressing Defensive Midfielder":["PDM","Wychodzi do pressingu na rozgrywającego rywala.","Steps out to press the opposition playmaker.","Sale a presionar al organizador rival.","Rückt heraus und presst den gegnerischen Spielmacher."],
+"Screening Defensive Midfielder":["SDM","Zamyka środek przed polem karnym i przecina podania.","Shuts the middle in front of the box and cuts passing lanes.","Cierra el centro delante del área y corta líneas de pase.","Schließt das Zentrum vor dem Strafraum und unterbindet Passwege."],
+"Wide Covering Defensive Midfielder":["WCDM","Defensywny pomocnik przesuwający się do boku za bocznym obrońcą.","Defensive midfielder who shifts wide to cover the full-back.","Pivote que se desplaza a la banda para cubrir al lateral.","Defensiver Mittelfeldspieler, der zur Seite schiebt und den Außenverteidiger absichert."],
+"Central Midfielder":["CM","Środkowy pomocnik, trzyma pozycję w linii pomocy.","Central midfielder who holds his place in the midfield line.","Centrocampista que mantiene su sitio en la línea media.","Zentraler Mittelfeldspieler, der seine Position in der Mittelfeldreihe hält."],
+"Channel Midfielder":["CHM","Wbiega w półprzestrzeń między bocznym a środkowym sektorem.","Runs into the half-space between the flank and the centre.","Ataca el carril interior entre la banda y el centro.","Läuft in den Halbraum zwischen Flügel und Zentrum."],
+"Midfield Playmaker":["MP","Rozgrywający w środku pola.","Playmaker in central midfield.","Organizador en el centro del campo.","Spielmacher im zentralen Mittelfeld."],
+"Wide Central Midfielder":["WCM","Środkowy pomocnik grający szerzej, wspiera skrzydło.","Central midfielder who plays wider and supports the flank.","Centrocampista que juega más abierto y apoya la banda.","Zentraler Mittelfeldspieler, der breiter spielt und die Seite unterstützt."],
+"Pressing Central Midfielder":["PCM","Doskakuje do rywala z piłką i napędza pressing.","Closes down the opponent on the ball and drives the press.","Presiona al rival con balón y lidera la presión.","Attackiert den Ballführenden und treibt das Pressing an."],
+"Screening Central Midfielder":["SCM","Zamyka środek i linie podań do napastników rywala.","Shuts the middle and the passing lanes to the opposition strikers.","Cierra el centro y las líneas de pase hacia los delanteros rivales.","Schließt das Zentrum und die Passwege zu den gegnerischen Stürmern."],
+"Wide Covering Central Midfielder":["WCCM","Przesuwa się do boku i asekuruje bocznego obrońcę.","Shifts wide and covers the full-back.","Se desplaza a la banda y cubre al lateral.","Schiebt zur Seite und sichert den Außenverteidiger ab."],
+"Attacking Midfielder":["AM","Gra między liniami, szuka strzału i ostatniego podania.","Plays between the lines, looks for the shot and the final pass.","Juega entre líneas, busca el tiro y el último pase.","Spielt zwischen den Linien, sucht Abschluss und letzten Pass."],
+"Advanced Playmaker":["AP","Kreator w strefie ataku, przez niego idzie gra.","Creator in the attacking zone – everything goes through him.","Creador en zona de ataque; todo pasa por él.","Kreativspieler im Angriffsdrittel, über ihn läuft das Spiel."],
+"Free Role":["FR","Wolna rola: szuka miejsca po całej szerokości i kreuje.","Free role: roams across the pitch looking for space and creates.","Rol libre: busca espacios por todo el ancho y crea.","Freie Rolle: sucht Räume über die ganze Breite und kreiert."],
+"Second Striker":["SS","Drugi napastnik, wbiega z głębi w pole karne.","Second striker who arrives in the box from deep.","Segundo delantero que llega al área desde atrás.","Hängende Spitze, die aus der Tiefe in den Strafraum stößt."],
+"Tracking Attacking Midfielder":["TAM","Bez piłki pilnuje defensywnego pomocnika rywala.","Out of possession marks the opposition defensive midfielder.","Sin balón vigila al mediocentro defensivo rival.","Deckt gegen den Ball den gegnerischen Sechser."],
+"Central Outlet Attacking Midfielder":["COAM","Zostaje wyżej bez piłki, pierwszy do kontry.","Stays higher out of possession – first option for the counter.","Se queda más arriba sin balón, primera opción para la contra.","Bleibt gegen den Ball höher, erste Anspielstation für Konter."],
+"Splitting Outlet Attacking Midfielder":["SOAM","Bez piłki czeka w lukach obrony rywala na kontrę.","Out of possession waits in the gaps of the opposition defence for a counter.","Sin balón espera en los huecos de la defensa rival para la contra.","Wartet gegen den Ball in den Lücken der gegnerischen Abwehr auf Konter."],
+"Wide Midfielder":["WM","Boczny pomocnik pracujący w obu kierunkach na skrzydle.","Wide midfielder who works both ways on the flank.","Interior de banda que trabaja en ambas direcciones.","Außenspieler, der auf der Seite in beide Richtungen arbeitet."],
+"Tracking Wide Midfielder":["TWM","Boczny pomocnik wracający za skrzydłowym rywala.","Wide midfielder who tracks back with the opposition winger.","Interior que vuelve con el extremo rival.","Außenspieler, der den gegnerischen Flügelspieler verfolgt."],
+"Wide Outlet Wide Midfielder":["WOWM","Bez piłki zostaje wyżej przy linii, gotowy do kontry.","Stays higher on the touchline out of possession, ready to counter.","Sin balón se queda más arriba en la banda, listo para la contra.","Bleibt gegen den Ball höher an der Linie, bereit für Konter."],
+"Winger":["W","Skrzydłowy przy linii: mija rywala i dośrodkowuje.","Winger who hugs the touchline: beats his man and crosses.","Extremo pegado a la banda: regatea y centra.","Flügelspieler an der Linie: geht ins Dribbling und flankt."],
+"Inside Winger":["IW","Skrzydłowy schodzący do półprzestrzeni, łączy grę.","Winger who drifts into the half-space and links play.","Extremo que se mete al carril interior y combina.","Flügelspieler, der in den Halbraum zieht und das Spiel verbindet."],
+"Inside Forward":["IF","Schodzi do środka na mocniejszą nogę i strzela.","Cuts inside onto his stronger foot and shoots.","Se mete hacia dentro a su pierna buena y dispara.","Zieht nach innen auf den starken Fuß und schließt ab."],
+"Wide Forward":["WF","Skrzydłowy-napastnik, atakuje pole karne z boku.","Winger-forward who attacks the box from the side.","Extremo-delantero que ataca el área desde fuera.","Flügelstürmer, der den Strafraum von der Seite angreift."],
+"Tracking Winger":["TW","Bez piłki wraca za bocznym obrońcą rywala.","Out of possession tracks back behind the opposition full-back.","Sin balón vuelve a la espalda del lateral rival.","Arbeitet gegen den Ball hinter den gegnerischen Außenverteidiger zurück."],
+"Inside Outlet Winger":["IOW","Bez piłki czeka w półprzestrzeni na szybką kontrę.","Out of possession waits in the half-space for a quick counter.","Sin balón espera en el carril interior para una contra rápida.","Wartet gegen den Ball im Halbraum auf einen schnellen Konter."],
+"Wide Outlet Winger":["WOW","Bez piłki zostaje wysoko przy linii do kontry.","Out of possession stays high on the touchline to counter.","Sin balón se queda arriba en la banda para la contra.","Bleibt gegen den Ball hoch an der Linie für Konter."],
+"Centre Forward":["CF","Wszechstronny napastnik: strzela, zgrywa, rozgrywa.","All-round striker: scores, lays off, links play.","Delantero completo: marca, descarga y combina.","Kompletter Stürmer: trifft, legt ab, verbindet das Spiel."],
+"Channel Forward":["CHF","Wbiega w kanały między obrońcami i rozciąga linię.","Runs into the channels between defenders and stretches the line.","Ataca los espacios entre defensas y estira la línea.","Läuft in die Schnittstellen zwischen den Verteidigern und zieht die Linie auseinander."],
+"Deep-Lying Forward":["DLF","Schodzi po piłkę, wiąże grę i rozgrywa.","Drops deep for the ball, holds it up and links play.","Baja a recibir, protege el balón y combina.","Lässt sich fallen, macht Bälle fest und verbindet das Spiel."],
+"Target Forward":["TF","Wysoki napastnik: wygrywa główki i zgrywa piłki.","Tall striker: wins headers and knocks balls down.","Delantero alto: gana balones aéreos y los baja.","Großer Stürmer: gewinnt Kopfbälle und legt ab."],
+"Poacher":["P","Lis pola karnego: czeka na ostatnie podanie i kończy akcje.","Box striker: waits for the final pass and finishes moves.","Delantero de área: espera el último pase y define.","Strafraumstürmer: wartet auf den letzten Pass und vollendet."],
+"Tracking Centre Forward":["TCF","Bez piłki cofa się i kryje pomocnika rywala.","Drops back out of possession and marks an opposition midfielder.","Sin balón retrocede y marca a un centrocampista rival.","Lässt sich gegen den Ball fallen und deckt einen gegnerischen Mittelfeldspieler."],
+"Central Outlet Centre Forward":["COCF","Zostaje z przodu bez piłki, cel do szybkiej kontry.","Stays up front out of possession – the target for a fast counter.","Se queda arriba sin balón, referencia para la contra rápida.","Bleibt gegen den Ball vorn, Zielspieler für schnelle Konter."],
+"Splitting Outlet Centre Forward":["SOCF","Czeka między stoperem a bocznym obrońcą na kontrę.","Waits between a centre-back and a full-back for the counter.","Espera entre el central y el lateral para la contra.","Wartet zwischen Innen- und Außenverteidiger auf den Konter."]
+};
+
+const POS={GK:[50,94],DR:[86,77],DCR:[65,80],DC:[50,81],DCL:[35,80],DL:[14,77],WBR:[90,62],WBL:[10,62],DMR:[64,65],DM:[50,66],DML:[36,65],MR:[88,47],MCR:[65,49],MC:[50,50],MCL:[35,49],ML:[12,47],AMR:[84,28],AMCR:[64,30],AMC:[50,31],AMCL:[36,30],AML:[16,28],STCR:[62,13],STC:[50,12],STCL:[38,13]};
+const POS_NAME={
+ GK:["Bramkarz","Goalkeeper","Portero","Torwart"],
+ DR:["Prawy obrońca","Right back","Lateral derecho","Rechter Verteidiger"],
+ DL:["Lewy obrońca","Left back","Lateral izquierdo","Linker Verteidiger"],
+ DC:["Środkowy obrońca","Centre-back","Central","Innenverteidiger"],
+ DCL:["Lewy stoper","Left centre-back","Central izquierdo","Linker Innenverteidiger"],
+ DCR:["Prawy stoper","Right centre-back","Central derecho","Rechter Innenverteidiger"],
+ WBR:["Prawy wahadłowy","Right wing-back","Carrilero derecho","Rechter Schienenspieler"],
+ WBL:["Lewy wahadłowy","Left wing-back","Carrilero izquierdo","Linker Schienenspieler"],
+ DM:["Defensywny pomocnik","Defensive midfielder","Mediocentro defensivo","Defensives Mittelfeld"],
+ DML:["Def. pomocnik (L)","Defensive mid (L)","Pivote (izq.)","Def. Mittelfeld (L)"],
+ DMR:["Def. pomocnik (P)","Defensive mid (R)","Pivote (der.)","Def. Mittelfeld (R)"],
+ MR:["Prawy pomocnik","Right midfielder","Interior derecho","Rechtes Mittelfeld"],
+ ML:["Lewy pomocnik","Left midfielder","Interior izquierdo","Linkes Mittelfeld"],
+ MC:["Środkowy pomocnik","Central midfielder","Centrocampista","Zentrales Mittelfeld"],
+ MCL:["Środkowy pomocnik (L)","Central mid (L)","Centrocampista (izq.)","Zentr. Mittelfeld (L)"],
+ MCR:["Środkowy pomocnik (P)","Central mid (R)","Centrocampista (der.)","Zentr. Mittelfeld (R)"],
+ AMR:["Prawy skrzydłowy","Right winger","Extremo derecho","Rechter Flügel"],
+ AML:["Lewy skrzydłowy","Left winger","Extremo izquierdo","Linker Flügel"],
+ AMC:["Ofensywny pomocnik","Attacking midfielder","Mediapunta","Offensives Mittelfeld"],
+ AMCL:["Ofens. pomocnik (L)","Attacking mid (L)","Mediapunta (izq.)","Off. Mittelfeld (L)"],
+ AMCR:["Ofens. pomocnik (P)","Attacking mid (R)","Mediapunta (der.)","Off. Mittelfeld (R)"],
+ STC:["Napastnik","Striker","Delantero","Stürmer"],
+ STCL:["Napastnik (L)","Striker (L)","Delantero (izq.)","Stürmer (L)"],
+ STCR:["Napastnik (P)","Striker (R)","Delantero (der.)","Stürmer (R)"]
+};
+const LANGS=["pl","en","es","de"];
+const DUTY={D:"Defend",S:"Support",A:"Attack"};
+const SI_NAME={"Gegenpress":"Gegenpress","Control Possession":"Control Possession","Tiki-Taka":"Tiki-Taka","Vertical Tiki-Taka":"Vertical Tiki-Taka","Fluid Counter Attack":"Fluid Counter-Attack","Direct Counter Attack":"Direct Counter-Attack","Wingplay":"Wing Play","Route One":"Route One","Park The Bus":"Park The Bus","Catenaccio":"Catenaccio"};
+const DEFENSIVE_SI=["Catenaccio","Park The Bus"];
+const GK_BY_SI={"Gegenpress":["Ball-Playing Goalkeeper","S","Sweeper Keeper","A"],"Control Possession":["Ball-Playing Goalkeeper","S","Sweeper Keeper","A"],"Tiki-Taka":["Ball-Playing Goalkeeper","S","Sweeper Keeper","A"],"Vertical Tiki-Taka":["Ball-Playing Goalkeeper","S","Goalkeeper","S"],"Fluid Counter Attack":["Goalkeeper","D","Goalkeeper","S"],"Wingplay":["Goalkeeper","D","Goalkeeper","S"],"Direct Counter Attack":["No-Nonsense Goalkeeper","D","Goalkeeper","S"],"Route One":["No-Nonsense Goalkeeper","D","Line-Holding Keeper","D"],"Park The Bus":["No-Nonsense Goalkeeper","D","Line-Holding Keeper","D"],"Catenaccio":["Goalkeeper","D","Goalkeeper","S"]};
+const lineOf=p=>p==="GK"?"lGK":/^(D|WB)/.test(p)&&!/^DM/.test(p)?"lD":/^(DM|M)/.test(p)?"lM":/^AM/.test(p)?"lAM":"lST";
+
+/* ======================= TEKSTY INTERFEJSU ======================= */
+const I18N={
+pl:{byLabel:"autor",disclaimer:"Nieoficjalne narzędzie fanowskie. Nie jest związane z Sports Interactive, SEGA ani tactics.sortitoutsi.net. Football Manager jest znakiem towarowym jego właścicieli. Style trenerów to interpretacja ich gry w ustawieniach FM27, a nie ich oficjalne taktyki.",fCoach:"0. Szybki wybór: ulubiony trener",coachNone:"— bez trenera, własne ustawienia —",coachHint:"Ustawia formację, styl i szczegóły w duchu trenera. Potem możesz wszystko zmienić.",w_coach:"Inspiracja: {name} – {desc}",coachNote:"To interpretacja stylu trenera w ramach ustawień FM27, a nie jego oficjalna taktyka.",coachMark:"trener",subCoach:"Styl: {name}",eyebrow:"Football Manager 27 · odprawa taktyczna",h1:"Generator taktyk",lead:"Wybierz formację i styl gry. Generator dopasuje role i instrukcje na bazie 90 oficjalnych presetów FM27 od Sports Interactive, wyjaśni każdą decyzję i ostrzeże przed ustawieniami, które się gryzą.",
+ fForm:"1. Formacja",fFormSmall:"(z piłką)",fStyle:"2. Styl gry",fWidth:"3. Którędy atakujesz",fLevel:"4. Siła drużyny w lidze",
+ st_possession:"Posiadanie piłki",st_press:"Atak i pressing",st_counter:"Kontrataki",st_direct:"Gra bezpośrednia",st_defence:"Mocna obrona",
+ w_narrow:"Wąsko, środkiem",w_balanced:"Mieszanie",w_wide:"Skrzydłami",l_fav:"Faworyt",l_mid:"Środek tabeli",l_und:"Słabeusz",diamond:"4-4-2 romb",
+ advLabel:"Tryb zaawansowany: wnioski z testów",advDesc:"Dodaje ustawienia, które w testach wersji próbnej FM27 dawały dominację: wyższa mentalność, szybkie tempo, wysoki pressing przy niższej linii, wąski atak z bocznymi obrońcami schodzącymi do środka. Mogą przestać działać po aktualizacji silnika.",
+ ip:"Z piłką",oop:"Bez piłki",oopShape:"Kształt bez piłki",rolesH:"Role zawodników",thPos:"Pozycja",checksH:"Kontrola spójności",tiH:"Instrukcje zespołowe",whyH:"Dlaczego tak",watchH:"Na co patrzeć w pierwszych meczach",
+ copyText:"Kopiuj taktykę jako tekst",copied:"Skopiowano do schowka.",copyFb:"Zaznaczono tekst poniżej – skopiuj go skrótem klawiszowym.",
+ fmfH:"Plik .fmf do wczytania w grze",setupH:"Tylko za pierwszym razem: dodaj zakładkę",setupTxt:"Złap myszką zielony przycisk poniżej i <b>przeciągnij go na pasek zakładek</b> przeglądarki. Nie widzisz paska? Włącz go skrótem <b>Ctrl+Shift+B</b>.",
+ bmLabel:"FM27 → plik",bmHint:"← przeciągnij, nie klikaj",bmClick:"To trzeba przeciągnąć na pasek zakładek, a kliknąć dopiero na stronie sortitoutsi.",
+ altSum:"Przeciąganie nie działa? Dodaj zakładkę ręcznie",altSteps:"<li>Kliknij <b>Kopiuj kod zakładki</b>.</li><li>Prawy przycisk na pasku zakładek → <b>Dodaj stronę</b> / <b>Dodaj zakładkę</b>.</li><li>Nazwa: <b>FM27 → plik</b>, w polu <b>Adres (URL)</b> wklej kod, zapisz.</li>",
+ copyBm:"Kopiuj kod zakładki",bmCopied:"Skopiowano kod zakładki.",eachH:"Za każdym razem, gdy chcesz plik:",
+ eachSteps:"<li>Kliknij <b>Kopiuj przepis</b> poniżej.</li><li>Otwórz <span class=\"mono\">tactics.sortitoutsi.net</span> w osobnej karcie i <b>zaloguj się</b> (jeśli nie masz konta, najpierw się zarejestruj). Dopiero będąc zalogowanym, kliknij zakładkę <b>FM27 → plik</b>.</li><li>W okienku, które się pojawi, wklej przepis (Ctrl+V) i kliknij <b>Utwórz plik .fmf</b>. Plik trafi do folderu Pobrane.</li><li>W grze: ekran taktyki → <b>Load Tactic</b> → wybierz pobrany plik.</li>",
+ copyRecipe:"Kopiuj przepis",recipeCopied:"Skopiowano. Teraz otwórz tactics.sortitoutsi.net w osobnej karcie, zaloguj się i kliknij zakładkę FM27 → plik.",howSum:"Jak to działa",
+ howTxt:"Zakładka działa tylko na stronie tactics.sortitoutsi.net i korzysta z jej edytora taktyk. Bierze oficjalny preset FM27 jako bazę i nanosi na niego ustawienia z przepisu. Na końcu pokazuje, czy wszystko się udało. Strona ogranicza liczbę zapytań, więc przy kilku plikach pod rząd zakładka sama odczeka i spróbuje ponownie – rób pliki po jednym. Pliki FM27 z tej strony nie są jeszcze w pełni sprawdzone z grą, więc po wczytaniu porównaj taktykę z generatorem.",
+ footer:"Dane: 90 oficjalnych presetów FM27 (Sports Interactive) odczytanych z tactics.sortitoutsi.net oraz testy taktyk z 5-dniowej wersji próbnej FM27. Nazwy ról i instrukcji są po angielsku, tak jak w grze. Silnik będzie się zmieniał z aktualizacjami, więc traktuj wynik jako solidny punkt wyjścia i po 5–6 meczach dopasuj szczegóły do swoich zawodników.",
+ sub:"Baza: preset {si} · Mentality {m}",tagTI:"Instrukcje",shapeIP:"Z piłką: {f}",shapeOOP:"Bez piłki: {f} · {loe}",oopMove:"Bez piłki przechodzi na pozycję {p}.",
+ mentDD:"Ogólne nastawienie drużyny, ustawiasz je obok stylu na górze ekranu taktyki.",allDefault:"Wszystko na ustawieniach domyślnych.",untouched:"Pozostałe {n} instrukcji zostaw na ustawieniach domyślnych.",advMark:"z testów",
+ c_manyA_t:"Dużo zawodników z zadaniem Attack",c_manyA_b:"{n} z 10 zawodników z pola ma zadanie Attack. Przy stracie piłki z tyłu zostaje mało ludzi. W testach FM27 to działało tylko z parą defensywnych pomocników bez piłki.",
+ c_balA_t:"Równowaga w ataku",c_balA_b:"{n} zawodników z zadaniem Attack. Presety Sports Interactive mają ich zwykle 2–3, więc ryzyko kontr jest pod kontrolą.",
+ c_fewD_t:"Mało obrońców bez piłki",c_fewD_b:"Tylko {n} zawodników ma zadanie Defend bez piłki. Presety mają ich 5–8. Wybierz inny kształt bez piłki poniżej boiska.",
+ c_gapOk_t:"Wysoki pressing przy niskiej linii",c_gapOk_b:"Między pressingiem a obroną zostaje wolna strefa. Zamyka ją {n} defensywnych pomocników bez piłki. To wzorzec z testów wersji próbnej, a nie z presetów SI.",
+ c_gapBad_t:"Dziura między pressingiem a obroną",c_gapBad_b:"Wysoki pressing przy niskiej linii obrony zostawia rywalowi dużo miejsca w środku. Wybierz kształt bez piłki z dwoma defensywnymi pomocnikami (2DM lub 4-2-2-2 DM).",
+ c_highSK_t:"Wysoka linia obrony",c_highSK_b:"Potrzebujesz szybkich stoperów (Szybkość i Przyspieszenie około 13+). Sweeper Keeper asekuruje piłki za linią.",
+ c_highNoSK_t:"Wysoka linia obrony",c_highNoSK_b:"Wysoka linia bez Sweeper Keepera zostawia pustą przestrzeń za obroną. Zmień rolę bramkarza bez piłki na Sweeper Keeper albo obniż linię.",
+ c_stamina_t:"Duże obciążenie kondycyjne",c_stamina_b:"Kontrpressing i wysokie tempo szybko męczą zawodników, a w FM27 kondycja spada szybciej niż wcześniej. Planuj zmiany około 60. minuty i rotuj składem.",
+ c_noWidth_t:"Nikt nie daje szerokości",c_noWidth_b:"Wąskie ustawienie bez skrzydłowego ani wahadłowego zapycha środek. Dodaj rolę Winger albo Wing-Back na jednej stronie.",
+ c_complex_t:"Złożona taktyka",c_complex_b:"{n} zmienionych instrukcji. W FM27 złożona taktyka dłużej się wdraża (wskaźnik Tactical Effectiveness). Daj drużynie kilka tygodni treningu albo wyłącz tryb zaawansowany.",
+ c_simple_t:"Prosta taktyka",c_simple_b:"Tylko {n} zmienionych instrukcji. Drużyna szybko ją opanuje.",
+ c_medium_t:"Średnia złożoność",c_medium_b:"{n} zmienionych instrukcji. Kilka meczów i drużyna powinna ją przyswoić.",
+ c_undPress_t:"Pressing w słabszej drużynie",c_undPress_b:"Wysoki pressing kosztuje dużo sił. Jeśli tracisz gole w końcówkach, zmień Line of Engagement na Mid Block.",
+ c_advOff_t:"Tryb zaawansowany nieaktywny",c_advOff_b:"Wnioski z testów dotyczą gry pressingiem i nie pasują do stylu obronnego, więc zostały pominięte.",
+ w_map:"Styl „{s}”, atak „{w}”: najlepiej pasuje oficjalny preset {si}.",y_narrow:"Wąski atak daje przewagę liczebną w środku pola i krótsze odległości między zawodnikami.",
+ y_wide:"Atak skrzydłami rozciąga obronę rywala i otwiera miejsce w środku dla wbiegających pomocników.",w_fav:"Jako faworyt grasz mentalnością o stopień wyższą niż preset – rywale będą się bronić nisko.",
+ w_und:"Jako słabsza drużyna grasz mentalnością o stopień niższą – mniej ryzyka, mniej straconych goli.",w_adv:"Tryb zaawansowany: ustawienia z taktyk, które w testach wersji próbnej zdobywały 93–102 pkt w sezonie. Pomarańczowe znaczniki pokazują, co zmieniły.",
+ w_shape:"Bez piłki drużyna przechodzi z {a} w {b}.",w_hold:" Obronę osłania {n} zawodników.",
+ w_borrow:"Styl {si} nie ma oficjalnego presetu w formacji {f}. Role pochodzą z najbliższego stylu ({src}), a instrukcje zespołowe ze stylu {si}.",
+ w_template:"Płaskie 4-4-2 nie ma presetu Sports Interactive. Role pochodzą z szablonu opartego na przetestowanej taktyce WARRIOR, a instrukcje zespołowe ze stylu {si}.",
+ watchAdv:"Czy rywal wykorzystuje przestrzeń między pressingiem a obroną – jeśli tak, podnieś Defensive Line o stopień.",
+ txtTitle:"TAKTYKA FM27",txtRoles:"ROLE",txtRest:"Pozostałe instrukcje: domyślne."},
+en:{byLabel:"by",disclaimer:"Unofficial fan tool. Not affiliated with Sports Interactive, SEGA or tactics.sortitoutsi.net. Football Manager is a trademark of its respective owners. Manager styles are interpretations of their play within FM27 settings, not their official tactics.",fCoach:"0. Quick pick: favourite manager",coachNone:"— no manager, my own settings —",coachHint:"Sets formation, style and details in the manager's spirit. You can change anything afterwards.",w_coach:"Inspiration: {name} – {desc}",coachNote:"This is an interpretation of the manager's style within FM27 settings, not his official tactic.",coachMark:"manager",subCoach:"Style: {name}",eyebrow:"Football Manager 27 · tactical briefing",h1:"Tactic Generator",lead:"Pick a formation and a playing style. The generator matches roles and instructions using the 90 official FM27 presets from Sports Interactive, explains every decision and warns you about settings that clash.",
+ fForm:"1. Formation",fFormSmall:"(in possession)",fStyle:"2. Playing style",fWidth:"3. Where you attack",fLevel:"4. Team strength in the league",
+ st_possession:"Possession",st_press:"Attack & pressing",st_counter:"Counter-attacks",st_direct:"Direct play",st_defence:"Solid defence",
+ w_narrow:"Narrow, through the middle",w_balanced:"Mixed",w_wide:"Down the wings",l_fav:"Favourite",l_mid:"Mid-table",l_und:"Underdog",diamond:"4-4-2 diamond",
+ advLabel:"Advanced mode: test findings",advDesc:"Adds settings that dominated in tests of the FM27 trial version: higher mentality, fast tempo, a high press with a deeper line, a narrow attack with full-backs moving inside. May stop working after a match engine update.",
+ ip:"In possession",oop:"Out of possession",oopShape:"Out-of-possession shape",rolesH:"Player roles",thPos:"Position",checksH:"Consistency check",tiH:"Team instructions",whyH:"Why this setup",watchH:"What to watch in the first matches",
+ copyText:"Copy tactic as text",copied:"Copied to clipboard.",copyFb:"The text below is selected – copy it with your keyboard shortcut.",
+ fmfH:".fmf file to load in the game",setupH:"First time only: add the bookmark",setupTxt:"Grab the green button below and <b>drag it onto your browser's bookmarks bar</b>. Can't see the bar? Show it with <b>Ctrl+Shift+B</b>.",
+ bmLabel:"FM27 → file",bmHint:"← drag it, don't click",bmClick:"Drag this onto the bookmarks bar; click it only on the sortitoutsi site.",
+ altSum:"Dragging doesn't work? Add the bookmark manually",altSteps:"<li>Click <b>Copy bookmark code</b>.</li><li>Right-click the bookmarks bar → <b>Add page</b> / <b>Add bookmark</b>.</li><li>Name: <b>FM27 → file</b>, paste the code into the <b>URL</b> field, save.</li>",
+ copyBm:"Copy bookmark code",bmCopied:"Bookmark code copied.",eachH:"Every time you want a file:",
+ eachSteps:"<li>Click <b>Copy recipe</b> below.</li><li>Open <span class=\"mono\">tactics.sortitoutsi.net</span> in a separate tab and <b>log in</b> (if you have no account, register first). Only once you are logged in, click the <b>FM27 → file</b> bookmark.</li><li>In the window that appears, paste the recipe (Ctrl+V) and click <b>Create .fmf file</b>. The file goes to your Downloads folder.</li><li>In the game: tactics screen → <b>Load Tactic</b> → pick the downloaded file.</li>",
+ copyRecipe:"Copy recipe",recipeCopied:"Copied. Now open tactics.sortitoutsi.net in a separate tab, log in and click the FM27 → file bookmark.",howSum:"How it works",
+ howTxt:"The bookmark only works on tactics.sortitoutsi.net and uses its tactic editor. It takes an official FM27 preset as the base, applies the recipe's settings to it and tells you at the end whether everything worked. The site limits the number of requests, so if you make several files in a row the bookmark waits and retries on its own – make files one at a time. FM27 files from this site are not yet fully verified against the game, so after loading compare the tactic with the generator.",
+ footer:"Data: 90 official FM27 presets (Sports Interactive) read via tactics.sortitoutsi.net, plus tactic tests from the 5-day FM27 trial. Role and instruction names are in English, as in the game. The match engine will change with updates, so treat the result as a solid starting point and fine-tune it to your players after 5–6 matches.",
+ sub:"Base: {si} preset · Mentality {m}",tagTI:"Instructions",shapeIP:"In possession: {f}",shapeOOP:"Out of possession: {f} · {loe}",oopMove:"Out of possession moves to {p}.",
+ mentDD:"The team's overall approach, set next to the style at the top of the tactics screen.",allDefault:"Everything on default settings.",untouched:"Leave the remaining {n} instructions on their defaults.",advMark:"from tests",
+ c_manyA_t:"Many players on an Attack duty",c_manyA_b:"{n} of 10 outfield players have an Attack duty. When you lose the ball, few players are left at the back. In FM27 tests this only worked with a pair of defensive midfielders out of possession.",
+ c_balA_t:"Balanced attack",c_balA_b:"{n} players on an Attack duty. Sports Interactive presets usually have 2–3, so the counter-attack risk is under control.",
+ c_fewD_t:"Few defenders out of possession",c_fewD_b:"Only {n} players have a Defend duty out of possession. Presets have 5–8. Pick a different out-of-possession shape below the pitch.",
+ c_gapOk_t:"High press with a deep line",c_gapOk_b:"A free zone opens between the press and the defence. {n} defensive midfielders close it out of possession. This pattern comes from the trial-version tests, not from the SI presets.",
+ c_gapBad_t:"Gap between press and defence",c_gapBad_b:"A high press with a deep defensive line leaves the opponent lots of space in midfield. Pick an out-of-possession shape with two defensive midfielders (2DM or 4-2-2-2 DM).",
+ c_highSK_t:"High defensive line",c_highSK_b:"You need quick centre-backs (Pace and Acceleration around 13+). The Sweeper Keeper covers balls played in behind.",
+ c_highNoSK_t:"High defensive line",c_highNoSK_b:"A high line without a Sweeper Keeper leaves empty space behind the defence. Change the keeper's out-of-possession role to Sweeper Keeper or drop the line.",
+ c_stamina_t:"Heavy physical load",c_stamina_b:"Counter-pressing and a high tempo tire players fast, and in FM27 condition drops faster than before. Plan substitutions around the 60th minute and rotate the squad.",
+ c_noWidth_t:"Nobody provides width",c_noWidth_b:"A narrow setup with no winger or wing-back clogs the middle. Add a Winger or Wing-Back role on one side.",
+ c_complex_t:"Complex tactic",c_complex_b:"{n} changed instructions. In FM27 a complex tactic takes longer to bed in (the Tactical Effectiveness gauge). Give the team a few weeks of training or switch off advanced mode.",
+ c_simple_t:"Simple tactic",c_simple_b:"Only {n} changed instructions. The team will pick it up quickly.",
+ c_medium_t:"Medium complexity",c_medium_b:"{n} changed instructions. A few matches and the team should have it down.",
+ c_undPress_t:"Pressing with a weaker team",c_undPress_b:"A high press costs a lot of energy. If you concede late goals, change Line of Engagement to Mid Block.",
+ c_advOff_t:"Advanced mode inactive",c_advOff_b:"The test findings are about pressing football and don't fit a defensive style, so they were skipped.",
+ w_map:"Style “{s}”, attack “{w}”: the best fit is the official {si} preset.",y_narrow:"A narrow attack gives you numbers in midfield and short distances between players.",
+ y_wide:"Attacking down the wings stretches the opposition defence and opens space in the middle for runners.",w_fav:"As favourite you play one mentality step above the preset – opponents will sit deep.",
+ w_und:"As the weaker side you play one mentality step lower – less risk, fewer goals conceded.",w_adv:"Advanced mode: settings from tactics that scored 93–102 points per season in trial-version tests. Orange tags show what they changed.",
+ w_shape:"Out of possession the team shifts from {a} to {b}.",w_hold:" {n} players screen the defence.",
+ w_borrow:"The {si} style has no official preset in {f}. Roles come from the closest style ({src}), team instructions from {si}.",
+ w_template:"A flat 4-4-2 has no Sports Interactive preset. Roles come from a template based on the tested WARRIOR tactic, team instructions from {si}.",
+ watchAdv:"Whether opponents exploit the space between your press and your defence – if so, raise Defensive Line one step.",
+ txtTitle:"FM27 TACTIC",txtRoles:"ROLES",txtRest:"Other instructions: default."},
+es:{byLabel:"autor",disclaimer:"Herramienta no oficial creada por aficionados. Sin relación con Sports Interactive, SEGA ni tactics.sortitoutsi.net. Football Manager es una marca de sus respectivos propietarios. Los estilos de los entrenadores son interpretaciones de su juego con los ajustes de FM27, no sus tácticas oficiales.",fCoach:"0. Elección rápida: entrenador favorito",coachNone:"— sin entrenador, mis ajustes —",coachHint:"Ajusta formación, estilo y detalles al estilo del entrenador. Después puedes cambiarlo todo.",w_coach:"Inspiración: {name} – {desc}",coachNote:"Es una interpretación del estilo del entrenador con los ajustes de FM27, no su táctica oficial.",coachMark:"entrenador",subCoach:"Estilo: {name}",eyebrow:"Football Manager 27 · charla táctica",h1:"Generador de tácticas",lead:"Elige una formación y un estilo de juego. El generador ajusta roles e instrucciones a partir de los 90 presets oficiales de FM27 de Sports Interactive, explica cada decisión y te avisa de los ajustes que chocan entre sí.",
+ fForm:"1. Formación",fFormSmall:"(con balón)",fStyle:"2. Estilo de juego",fWidth:"3. Por dónde atacas",fLevel:"4. Nivel del equipo en la liga",
+ st_possession:"Posesión",st_press:"Ataque y presión",st_counter:"Contraataques",st_direct:"Juego directo",st_defence:"Defensa sólida",
+ w_narrow:"Estrecho, por el centro",w_balanced:"Mixto",w_wide:"Por las bandas",l_fav:"Favorito",l_mid:"Media tabla",l_und:"Modesto",diamond:"4-4-2 rombo",
+ advLabel:"Modo avanzado: conclusiones de las pruebas",advDesc:"Añade ajustes que dominaron en las pruebas de la versión de prueba de FM27: mentalidad más alta, ritmo rápido, presión alta con línea más baja y ataque estrecho con laterales que se meten por dentro. Puede dejar de funcionar tras una actualización del motor.",
+ ip:"Con balón",oop:"Sin balón",oopShape:"Forma sin balón",rolesH:"Roles de los jugadores",thPos:"Posición",checksH:"Control de coherencia",tiH:"Instrucciones de equipo",whyH:"Por qué así",watchH:"Qué vigilar en los primeros partidos",
+ copyText:"Copiar táctica como texto",copied:"Copiado al portapapeles.",copyFb:"El texto de abajo está seleccionado: cópialo con el atajo de teclado.",
+ fmfH:"Archivo .fmf para cargar en el juego",setupH:"Solo la primera vez: añade el marcador",setupTxt:"Arrastra el botón verde de abajo <b>a la barra de marcadores</b> del navegador. ¿No ves la barra? Muéstrala con <b>Ctrl+Shift+B</b>.",
+ bmLabel:"FM27 → archivo",bmHint:"← arrástralo, no hagas clic",bmClick:"Arrástralo a la barra de marcadores; haz clic en él solo en la web de sortitoutsi.",
+ altSum:"¿No funciona arrastrar? Añade el marcador a mano",altSteps:"<li>Haz clic en <b>Copiar código del marcador</b>.</li><li>Clic derecho en la barra de marcadores → <b>Añadir página</b> / <b>Añadir marcador</b>.</li><li>Nombre: <b>FM27 → archivo</b>; pega el código en el campo <b>URL</b> y guarda.</li>",
+ copyBm:"Copiar código del marcador",bmCopied:"Código del marcador copiado.",eachH:"Cada vez que quieras un archivo:",
+ eachSteps:"<li>Haz clic en <b>Copiar receta</b> abajo.</li><li>Abre <span class=\"mono\">tactics.sortitoutsi.net</span> en otra pestaña e <b>inicia sesión</b> (si no tienes cuenta, regístrate primero). Solo cuando hayas iniciado sesión, haz clic en el marcador <b>FM27 → archivo</b>.</li><li>En la ventana que aparece, pega la receta (Ctrl+V) y haz clic en <b>Crear archivo .fmf</b>. El archivo se guarda en Descargas.</li><li>En el juego: pantalla de tácticas → <b>Load Tactic</b> → elige el archivo descargado.</li>",
+ copyRecipe:"Copiar receta",recipeCopied:"Copiado. Ahora abre tactics.sortitoutsi.net en otra pestaña, inicia sesión y haz clic en el marcador FM27 → archivo.",howSum:"Cómo funciona",
+ howTxt:"El marcador solo funciona en tactics.sortitoutsi.net y usa su editor de tácticas. Toma un preset oficial de FM27 como base, le aplica los ajustes de la receta y al final te dice si todo ha ido bien. La web limita el número de peticiones, así que si haces varios archivos seguidos el marcador espera y lo reintenta solo: hazlos de uno en uno. Los archivos de FM27 de esta web aún no están verificados del todo con el juego, así que tras cargarlos compara la táctica con el generador.",
+ footer:"Datos: 90 presets oficiales de FM27 (Sports Interactive) leídos desde tactics.sortitoutsi.net y pruebas de tácticas de la versión de prueba de 5 días de FM27. Los nombres de roles e instrucciones están en inglés, como en el juego. El motor cambiará con las actualizaciones, así que toma el resultado como un buen punto de partida y ajústalo a tus jugadores tras 5–6 partidos.",
+ sub:"Base: preset {si} · Mentality {m}",tagTI:"Instrucciones",shapeIP:"Con balón: {f}",shapeOOP:"Sin balón: {f} · {loe}",oopMove:"Sin balón pasa a la posición {p}.",
+ mentDD:"La actitud general del equipo; se ajusta junto al estilo, arriba en la pantalla de tácticas.",allDefault:"Todo en los ajustes por defecto.",untouched:"Deja las {n} instrucciones restantes en sus valores por defecto.",advMark:"de pruebas",
+ c_manyA_t:"Muchos jugadores con función Attack",c_manyA_b:"{n} de los 10 jugadores de campo tienen función Attack. Al perder el balón quedan pocos atrás. En las pruebas de FM27 solo funcionó con una pareja de mediocentros defensivos sin balón.",
+ c_balA_t:"Ataque equilibrado",c_balA_b:"{n} jugadores con función Attack. Los presets de Sports Interactive suelen tener 2–3, así que el riesgo de contras está controlado.",
+ c_fewD_t:"Pocos defensores sin balón",c_fewD_b:"Solo {n} jugadores tienen función Defend sin balón. Los presets tienen 5–8. Elige otra forma sin balón debajo del campo.",
+ c_gapOk_t:"Presión alta con línea baja",c_gapOk_b:"Queda una zona libre entre la presión y la defensa. La cierran {n} mediocentros defensivos sin balón. Este patrón viene de las pruebas de la versión de prueba, no de los presets de SI.",
+ c_gapBad_t:"Hueco entre presión y defensa",c_gapBad_b:"Una presión alta con la línea defensiva baja deja mucho espacio al rival en el centro. Elige una forma sin balón con dos mediocentros defensivos (2DM o 4-2-2-2 DM).",
+ c_highSK_t:"Línea defensiva alta",c_highSK_b:"Necesitas centrales rápidos (Velocidad y Aceleración en torno a 13+). El Sweeper Keeper cubre los balones a la espalda.",
+ c_highNoSK_t:"Línea defensiva alta",c_highNoSK_b:"Una línea alta sin Sweeper Keeper deja espacio vacío a la espalda de la defensa. Cambia el rol del portero sin balón a Sweeper Keeper o baja la línea.",
+ c_stamina_t:"Mucha carga física",c_stamina_b:"La contrapresión y el ritmo alto cansan rápido, y en FM27 la condición física baja más deprisa que antes. Planifica cambios hacia el minuto 60 y rota la plantilla.",
+ c_noWidth_t:"Nadie da amplitud",c_noWidth_b:"Un planteamiento estrecho sin extremo ni carrilero atasca el centro. Añade un rol Winger o Wing-Back en una banda.",
+ c_complex_t:"Táctica compleja",c_complex_b:"{n} instrucciones cambiadas. En FM27 una táctica compleja tarda más en asimilarse (indicador Tactical Effectiveness). Dale al equipo unas semanas de entrenamiento o desactiva el modo avanzado.",
+ c_simple_t:"Táctica sencilla",c_simple_b:"Solo {n} instrucciones cambiadas. El equipo la asimilará rápido.",
+ c_medium_t:"Complejidad media",c_medium_b:"{n} instrucciones cambiadas. En unos partidos el equipo debería dominarla.",
+ c_undPress_t:"Presión con un equipo modesto",c_undPress_b:"La presión alta cuesta mucha energía. Si encajas goles al final, cambia Line of Engagement a Mid Block.",
+ c_advOff_t:"Modo avanzado inactivo",c_advOff_b:"Las conclusiones de las pruebas se refieren al juego de presión y no encajan en un estilo defensivo, así que se han omitido.",
+ w_map:"Estilo «{s}», ataque «{w}»: el que mejor encaja es el preset oficial {si}.",y_narrow:"Un ataque estrecho da superioridad en el centro y distancias cortas entre jugadores.",
+ y_wide:"Atacar por las bandas abre la defensa rival y libera espacio en el centro para quienes llegan.",w_fav:"Como favorito juegas un escalón de mentalidad por encima del preset: los rivales se encerrarán atrás.",
+ w_und:"Como equipo modesto juegas un escalón de mentalidad por debajo: menos riesgo y menos goles encajados.",w_adv:"Modo avanzado: ajustes de tácticas que sumaron 93–102 puntos por temporada en las pruebas de la versión de prueba. Las etiquetas naranjas muestran qué han cambiado.",
+ w_shape:"Sin balón el equipo pasa de {a} a {b}.",w_hold:" {n} jugadores protegen la defensa.",
+ w_borrow:"El estilo {si} no tiene preset oficial en {f}. Los roles vienen del estilo más cercano ({src}) y las instrucciones de equipo, de {si}.",
+ w_template:"El 4-4-2 en línea no tiene preset de Sports Interactive. Los roles vienen de una plantilla basada en la táctica probada WARRIOR y las instrucciones de equipo, de {si}.",
+ watchAdv:"Si el rival aprovecha el espacio entre tu presión y tu defensa: en ese caso, sube Defensive Line un escalón.",
+ txtTitle:"TÁCTICA FM27",txtRoles:"ROLES",txtRest:"Resto de instrucciones: por defecto."},
+de:{byLabel:"von",disclaimer:"Inoffizielles Fan-Tool. Keine Verbindung zu Sports Interactive, SEGA oder tactics.sortitoutsi.net. Football Manager ist eine Marke der jeweiligen Inhaber. Trainerstile sind Interpretationen ihres Spiels mit FM27-Einstellungen, nicht ihre offiziellen Taktiken.",fCoach:"0. Schnellwahl: Lieblingstrainer",coachNone:"— kein Trainer, eigene Einstellungen —",coachHint:"Setzt Formation, Stil und Details im Sinne des Trainers. Danach kannst du alles ändern.",w_coach:"Inspiration: {name} – {desc}",coachNote:"Das ist eine Interpretation des Trainerstils mit FM27-Einstellungen, nicht seine offizielle Taktik.",coachMark:"Trainer",subCoach:"Stil: {name}",eyebrow:"Football Manager 27 · Taktikbesprechung",h1:"Taktik-Generator",lead:"Wähle eine Formation und einen Spielstil. Der Generator wählt Rollen und Anweisungen auf Basis der 90 offiziellen FM27-Presets von Sports Interactive, erklärt jede Entscheidung und warnt vor Einstellungen, die sich widersprechen.",
+ fForm:"1. Formation",fFormSmall:"(mit Ball)",fStyle:"2. Spielstil",fWidth:"3. Wo du angreifst",fLevel:"4. Stärke des Teams in der Liga",
+ st_possession:"Ballbesitz",st_press:"Angriff & Pressing",st_counter:"Konter",st_direct:"Direktes Spiel",st_defence:"Stabile Defensive",
+ w_narrow:"Eng, durch die Mitte",w_balanced:"Gemischt",w_wide:"Über die Flügel",l_fav:"Favorit",l_mid:"Mittelfeld",l_und:"Außenseiter",diamond:"4-4-2 Raute",
+ advLabel:"Expertenmodus: Testergebnisse",advDesc:"Fügt Einstellungen hinzu, die in Tests der FM27-Testversion dominierten: höhere Mentalität, schnelles Tempo, hohes Pressing mit tieferer Linie, enger Angriff mit einrückenden Außenverteidigern. Kann nach einem Update der Spiel-Engine nicht mehr funktionieren.",
+ ip:"Mit Ball",oop:"Gegen den Ball",oopShape:"Formation gegen den Ball",rolesH:"Spielerrollen",thPos:"Position",checksH:"Stimmigkeitsprüfung",tiH:"Mannschaftsanweisungen",whyH:"Warum so",watchH:"Worauf du in den ersten Spielen achten solltest",
+ copyText:"Taktik als Text kopieren",copied:"In die Zwischenablage kopiert.",copyFb:"Der Text unten ist markiert – kopiere ihn per Tastenkürzel.",
+ fmfH:".fmf-Datei zum Laden im Spiel",setupH:"Nur beim ersten Mal: Lesezeichen hinzufügen",setupTxt:"Zieh den grünen Button unten <b>in die Lesezeichenleiste</b> deines Browsers. Leiste nicht sichtbar? Mit <b>Strg+Umschalt+B</b> einblenden.",
+ bmLabel:"FM27 → Datei",bmHint:"← ziehen, nicht klicken",bmClick:"Zieh das in die Lesezeichenleiste; klicke es erst auf der sortitoutsi-Seite an.",
+ altSum:"Ziehen klappt nicht? Lesezeichen manuell anlegen",altSteps:"<li>Klicke auf <b>Lesezeichen-Code kopieren</b>.</li><li>Rechtsklick auf die Lesezeichenleiste → <b>Seite hinzufügen</b> / <b>Lesezeichen hinzufügen</b>.</li><li>Name: <b>FM27 → Datei</b>, Code ins Feld <b>URL</b> einfügen, speichern.</li>",
+ copyBm:"Lesezeichen-Code kopieren",bmCopied:"Lesezeichen-Code kopiert.",eachH:"Jedes Mal, wenn du eine Datei willst:",
+ eachSteps:"<li>Klicke unten auf <b>Rezept kopieren</b>.</li><li>Öffne <span class=\"mono\">tactics.sortitoutsi.net</span> in einem separaten Tab und <b>melde dich an</b> (ohne Konto zuerst registrieren). Erst wenn du angemeldet bist, klicke auf das Lesezeichen <b>FM27 → Datei</b>.</li><li>Im erscheinenden Fenster das Rezept einfügen (Strg+V) und auf <b>.fmf-Datei erstellen</b> klicken. Die Datei landet in deinen Downloads.</li><li>Im Spiel: Taktikbildschirm → <b>Load Tactic</b> → heruntergeladene Datei wählen.</li>",
+ copyRecipe:"Rezept kopieren",recipeCopied:"Kopiert. Öffne jetzt tactics.sortitoutsi.net in einem separaten Tab, melde dich an und klicke auf das Lesezeichen FM27 → Datei.",howSum:"So funktioniert's",
+ howTxt:"Das Lesezeichen funktioniert nur auf tactics.sortitoutsi.net und nutzt dessen Taktik-Editor. Es nimmt ein offizielles FM27-Preset als Basis, überträgt die Einstellungen aus dem Rezept und meldet am Ende, ob alles geklappt hat. Die Seite begrenzt die Anzahl der Anfragen; bei mehreren Dateien hintereinander wartet das Lesezeichen und versucht es erneut – erstelle Dateien einzeln. FM27-Dateien dieser Seite sind noch nicht vollständig mit dem Spiel geprüft, vergleiche die Taktik nach dem Laden also mit dem Generator.",
+ footer:"Daten: 90 offizielle FM27-Presets (Sports Interactive), ausgelesen über tactics.sortitoutsi.net, sowie Taktiktests aus der 5-tägigen FM27-Testversion. Rollen- und Anweisungsnamen sind wie im Spiel auf Englisch. Die Spiel-Engine ändert sich mit Updates – nimm das Ergebnis als soliden Ausgangspunkt und passe es nach 5–6 Spielen an deine Spieler an.",
+ sub:"Basis: Preset {si} · Mentality {m}",tagTI:"Anweisungen",shapeIP:"Mit Ball: {f}",shapeOOP:"Gegen den Ball: {f} · {loe}",oopMove:"Gegen den Ball rückt er auf {p}.",
+ mentDD:"Die Grundausrichtung des Teams, einstellbar neben dem Stil oben im Taktikbildschirm.",allDefault:"Alles auf Standardeinstellungen.",untouched:"Lass die übrigen {n} Anweisungen auf Standard.",advMark:"aus Tests",
+ c_manyA_t:"Viele Spieler mit Aufgabe Attack",c_manyA_b:"{n} von 10 Feldspielern haben die Aufgabe Attack. Bei Ballverlust bleiben hinten nur wenige. In FM27-Tests funktionierte das nur mit zwei defensiven Mittelfeldspielern gegen den Ball.",
+ c_balA_t:"Ausgewogener Angriff",c_balA_b:"{n} Spieler mit Aufgabe Attack. Presets von Sports Interactive haben meist 2–3, das Konterrisiko ist also im Griff.",
+ c_fewD_t:"Wenige Verteidiger gegen den Ball",c_fewD_b:"Nur {n} Spieler haben gegen den Ball die Aufgabe Defend. Presets haben 5–8. Wähle unter dem Spielfeld eine andere Formation gegen den Ball.",
+ c_gapOk_t:"Hohes Pressing mit tiefer Linie",c_gapOk_b:"Zwischen Pressing und Abwehr entsteht ein freier Raum. Ihn schließen {n} defensive Mittelfeldspieler gegen den Ball. Dieses Muster stammt aus den Tests der Testversion, nicht aus den SI-Presets.",
+ c_gapBad_t:"Lücke zwischen Pressing und Abwehr",c_gapBad_b:"Hohes Pressing mit tiefer Abwehrlinie lässt dem Gegner viel Raum im Zentrum. Wähle eine Formation gegen den Ball mit zwei defensiven Mittelfeldspielern (2DM oder 4-2-2-2 DM).",
+ c_highSK_t:"Hohe Abwehrlinie",c_highSK_b:"Du brauchst schnelle Innenverteidiger (Schnelligkeit und Antritt um 13+). Der Sweeper Keeper sichert Bälle hinter die Abwehr ab.",
+ c_highNoSK_t:"Hohe Abwehrlinie",c_highNoSK_b:"Eine hohe Linie ohne Sweeper Keeper lässt Raum hinter der Abwehr. Stell die Rolle des Torwarts gegen den Ball auf Sweeper Keeper oder senke die Linie.",
+ c_stamina_t:"Hohe körperliche Belastung",c_stamina_b:"Gegenpressing und hohes Tempo ermüden schnell, und in FM27 sinkt die Kondition schneller als früher. Plane Wechsel um die 60. Minute und rotiere den Kader.",
+ c_noWidth_t:"Niemand sorgt für Breite",c_noWidth_b:"Eine enge Ausrichtung ohne Flügelspieler oder Wing-Back verstopft die Mitte. Setze auf einer Seite eine Winger- oder Wing-Back-Rolle.",
+ c_complex_t:"Komplexe Taktik",c_complex_b:"{n} geänderte Anweisungen. In FM27 braucht eine komplexe Taktik länger, bis sie sitzt (Anzeige Tactical Effectiveness). Gib dem Team einige Wochen Training oder schalte den Expertenmodus aus.",
+ c_simple_t:"Einfache Taktik",c_simple_b:"Nur {n} geänderte Anweisungen. Das Team verinnerlicht sie schnell.",
+ c_medium_t:"Mittlere Komplexität",c_medium_b:"{n} geänderte Anweisungen. Nach ein paar Spielen sollte das Team sie beherrschen.",
+ c_undPress_t:"Pressing mit einem schwächeren Team",c_undPress_b:"Hohes Pressing kostet viel Kraft. Kassierst du späte Tore, stell Line of Engagement auf Mid Block.",
+ c_advOff_t:"Expertenmodus inaktiv",c_advOff_b:"Die Testergebnisse betreffen Pressingfußball und passen nicht zu einem defensiven Stil, deshalb wurden sie ausgelassen.",
+ w_map:"Stil „{s}“, Angriff „{w}“: Am besten passt das offizielle Preset {si}.",y_narrow:"Ein enger Angriff schafft Überzahl im Zentrum und kurze Abstände zwischen den Spielern.",
+ y_wide:"Angriffe über die Flügel ziehen die gegnerische Abwehr auseinander und öffnen Räume in der Mitte für nachrückende Spieler.",w_fav:"Als Favorit spielst du eine Mentalitätsstufe über dem Preset – Gegner werden tief stehen.",
+ w_und:"Als schwächeres Team spielst du eine Mentalitätsstufe tiefer – weniger Risiko, weniger Gegentore.",w_adv:"Expertenmodus: Einstellungen aus Taktiken, die in Tests der Testversion 93–102 Punkte pro Saison holten. Orange Markierungen zeigen, was sie geändert haben.",
+ w_shape:"Gegen den Ball wechselt das Team von {a} zu {b}.",w_hold:" {n} Spieler schirmen die Abwehr ab.",
+ w_borrow:"Der Stil {si} hat kein offizielles Preset in {f}. Die Rollen stammen vom nächstliegenden Stil ({src}), die Mannschaftsanweisungen von {si}.",
+ w_template:"Für ein flaches 4-4-2 gibt es kein Preset von Sports Interactive. Die Rollen stammen aus einer Vorlage auf Basis der getesteten Taktik WARRIOR, die Mannschaftsanweisungen von {si}.",
+ watchAdv:"Ob Gegner den Raum zwischen Pressing und Abwehr nutzen – dann Defensive Line eine Stufe höher stellen.",
+ txtTitle:"FM27-TAKTIK",txtRoles:"ROLLEN",txtRest:"Übrige Anweisungen: Standard."}
+};
+
+/* Teksty okienka zakładki (wbudowane w kod zakładki w wybranym języku) */
+const BM_T={
+pl:{login:"Nie jesteś zalogowany. Zaloguj się na tactics.sortitoutsi.net (albo zarejestruj), odśwież stronę i kliknij zakładkę ponownie.",notSite:"Najpierw otwórz stronę tactics.sortitoutsi.net, a potem kliknij tę zakładkę.",title:"Generator taktyk FM27",close:"Zamknij",intro:"1. Wklej przepis z generatora (Ctrl+V).<br>2. Kliknij zielony przycisk.",ph:"Tu wklej przepis (zaczyna się od FM27GEN1:)",btn:"Utwórz plik .fmf",fromClip:"Przepis wkleiłem ze schowka. Kliknij zielony przycisk.",need:"Najpierw wklej przepis. W generatorze kliknij „Kopiuj przepis”, a potem tutaj Ctrl+V.",working:"Pracuję… (kilkanaście sekund)",err:"Błąd: ",badRecipe:"To nie jest poprawny przepis z generatora.",noBase:"Nie znaleziono presetu bazowego: ",rate:"Serwer prosi o przerwę – spróbuj za minutę.",pName:"Ustawiam nazwę i mentalność…",pTi:"Instrukcje zespołowe: ",of:" z ",pIn:"Ustawiam zawodników: z piłką…",pOut:"Ustawiam zawodników: bez piłki…",pDl:"Pobieram plik…",dlFail:"Nie udało się pobrać pliku (HTTP ",done:"✓ Gotowe! Plik „{name}.fmf” jest w folderze Pobrane.",hint:"W grze: Taktyka → Load Tactic → wybierz ten plik.",bad:"Nie udało się ustawić:",skipped:"Pominięte zmiany",ip:"z piłką",oop:"bez piłki",is:"jest"},
+en:{login:"You are not logged in. Log in to tactics.sortitoutsi.net (or register), refresh the page and click the bookmark again.",notSite:"Open tactics.sortitoutsi.net first, then click this bookmark.",title:"FM27 Tactic Generator",close:"Close",intro:"1. Paste the recipe from the generator (Ctrl+V).<br>2. Click the green button.",ph:"Paste the recipe here (it starts with FM27GEN1:)",btn:"Create .fmf file",fromClip:"I pasted the recipe from your clipboard. Click the green button.",need:"Paste the recipe first. In the generator click “Copy recipe”, then press Ctrl+V here.",working:"Working… (10–20 seconds)",err:"Error: ",badRecipe:"This is not a valid recipe from the generator.",noBase:"Base preset not found: ",rate:"The server asks for a break – try again in a minute.",pName:"Setting name and mentality…",pTi:"Team instructions: ",of:" of ",pIn:"Setting up players: in possession…",pOut:"Setting up players: out of possession…",pDl:"Downloading the file…",dlFail:"Could not download the file (HTTP ",done:"✓ Done! The file “{name}.fmf” is in your Downloads folder.",hint:"In the game: Tactics → Load Tactic → pick this file.",bad:"Could not set:",skipped:"Skipped changes",ip:"in possession",oop:"out of possession",is:"is"},
+es:{login:"No has iniciado sesión. Inicia sesión en tactics.sortitoutsi.net (o regístrate), recarga la página y vuelve a hacer clic en el marcador.",notSite:"Abre primero tactics.sortitoutsi.net y luego haz clic en este marcador.",title:"Generador de tácticas FM27",close:"Cerrar",intro:"1. Pega la receta del generador (Ctrl+V).<br>2. Haz clic en el botón verde.",ph:"Pega aquí la receta (empieza por FM27GEN1:)",btn:"Crear archivo .fmf",fromClip:"He pegado la receta desde el portapapeles. Haz clic en el botón verde.",need:"Pega primero la receta. En el generador haz clic en «Copiar receta» y luego pulsa aquí Ctrl+V.",working:"Trabajando… (10–20 segundos)",err:"Error: ",badRecipe:"Esta no es una receta válida del generador.",noBase:"No se encontró el preset base: ",rate:"El servidor pide una pausa: inténtalo dentro de un minuto.",pName:"Ajustando nombre y mentalidad…",pTi:"Instrucciones de equipo: ",of:" de ",pIn:"Colocando jugadores: con balón…",pOut:"Colocando jugadores: sin balón…",pDl:"Descargando el archivo…",dlFail:"No se pudo descargar el archivo (HTTP ",done:"✓ ¡Listo! El archivo «{name}.fmf» está en Descargas.",hint:"En el juego: Tácticas → Load Tactic → elige este archivo.",bad:"No se pudo ajustar:",skipped:"Cambios omitidos",ip:"con balón",oop:"sin balón",is:"está"},
+de:{login:"Du bist nicht angemeldet. Melde dich auf tactics.sortitoutsi.net an (oder registriere dich), lade die Seite neu und klicke erneut auf das Lesezeichen.",notSite:"Öffne zuerst tactics.sortitoutsi.net und klicke dann auf dieses Lesezeichen.",title:"FM27 Taktik-Generator",close:"Schließen",intro:"1. Rezept aus dem Generator einfügen (Strg+V).<br>2. Auf den grünen Button klicken.",ph:"Rezept hier einfügen (beginnt mit FM27GEN1:)",btn:".fmf-Datei erstellen",fromClip:"Ich habe das Rezept aus der Zwischenablage eingefügt. Klicke auf den grünen Button.",need:"Füge zuerst das Rezept ein. Klicke im Generator auf „Rezept kopieren“ und dann hier Strg+V.",working:"Wird erstellt… (10–20 Sekunden)",err:"Fehler: ",badRecipe:"Das ist kein gültiges Rezept aus dem Generator.",noBase:"Basis-Preset nicht gefunden: ",rate:"Der Server bittet um eine Pause – versuche es in einer Minute erneut.",pName:"Setze Name und Mentalität…",pTi:"Mannschaftsanweisungen: ",of:" von ",pIn:"Setze Spieler: mit Ball…",pOut:"Setze Spieler: gegen den Ball…",pDl:"Lade die Datei herunter…",dlFail:"Datei konnte nicht heruntergeladen werden (HTTP ",done:"✓ Fertig! Die Datei „{name}.fmf“ liegt in deinen Downloads.",hint:"Im Spiel: Taktik → Load Tactic → diese Datei wählen.",bad:"Konnte nicht gesetzt werden:",skipped:"Übersprungene Änderungen",ip:"mit Ball",oop:"gegen den Ball",is:"ist"}
+};
+
+/* ======================= JĘZYK ======================= */
+let LANG="en";
+try{const s=localStorage.getItem("fm27lang"); if(LANGS.includes(s)) LANG=s;}catch(e){}
+const LI=()=>LANGS.indexOf(LANG);
+const t=(k,p)=>{let s=I18N[LANG][k]; if(s==null) s=I18N.pl[k]; if(s==null) s=k; if(p) s=s.replace(/\{(\w+)\}/g,(m,x)=>p[x]!=null?p[x]:m); return s;};
+const formLabel=F=>F.label||t(F.id);
+const posName=p=>(POS_NAME[p]||[])[LI()]||p;
+const roleDesc=r=>(ROLE[r]||[])[1+LI()]||"";
+const tiExpl=x=>x[6][LI()];
+
+/* ======================= LOGIKA ======================= */
+function parse(row,src){
+  return {src, si:row[0], ip:row[1], oop:row[2],
+    players:row[4].split(" ").map(s=>{const a=s.split(",");return {ip:{pos:a[0],role:ROLES[+a[1]],duty:a[2],pi:[]},oop:{pos:a[3],role:ROLES[+a[4]],duty:a[5],pi:[]}}})};
+}
+const ALL=P.map(r=>parse(r,"preset")).concat(TEMPLATES.map(r=>parse(r,"template")));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const isHolder=p=>/^DM/.test(p.oop.pos)||/Screening|Defensive Midfielder/.test(p.oop.role);
+
+function readState(){
+  const fd=new FormData(document.getElementById("f"));
+  return {form:fd.get("form"),style:fd.get("style"),width:fd.get("width"),level:fd.get("level"),adv:document.getElementById("adv").checked,coach:document.getElementById("coach").value||null};
+}
+let oopChoice=null;
+
+function build(c){
+  const F=FORMATIONS.find(f=>f.id===c.form);
+  const si=MAP[c.style][c.width];
+  const notes=[];
+  let pool=ALL.filter(x=>x.src==="preset"&&x.si===si&&x.ip===F.ip), srcSi=si, borrowed=false;
+  if(!pool.length){
+    pool=ALL.filter(x=>x.src==="template"&&x.ip===F.ip);
+    if(pool.length){borrowed=true;srcSi=null;}
+    else{for(const s of NEAR[si]){const p=ALL.filter(x=>x.src==="preset"&&x.si===s&&x.ip===F.ip);if(p.length){pool=p;srcSi=s;borrowed=true;break;}}}
+  }
+  const defensive=DEFENSIVE_SI.includes(si);
+  const advOn=c.adv && !defensive;
+  let variant=pool.find(x=>x.oop===oopChoice);
+  if(!variant){
+    if(advOn) variant=pool.slice().sort((a,b)=>b.players.filter(isHolder).length-a.players.filter(isHolder).length)[0];
+    else variant=pool[0];
+  }
+  const tac=clone(variant);
+  if(borrowed){
+    const g=GK_BY_SI[si], gk=tac.players.find(p=>p.ip.pos==="GK");
+    gk.ip.role=g[0];gk.ip.duty=g[1];gk.oop.role=g[2];gk.oop.duty=g[3];
+    notes.push(srcSi?["w_borrow",{si:SI_NAME[si],f:"@F",src:SI_NAME[srcSi]}]:["w_template",{si:SI_NAME[si]}]);
+  }
+  const ti={...DEF,...STYLE[si].ti};
+  const advKeys=new Set();
+  if(c.width==="narrow"){
+    if(!/Narrower/.test(ti["attacking-width"])) ti["attacking-width"]="Narrower";
+    if(ti["progress-through"]==="Balanced") ti["progress-through"]="Middle";
+    if(ti["crossing-style"]==="Balanced") ti["crossing-style"]="Low Crosses";
+  }else if(c.width==="wide"){
+    if(ti["attacking-width"]!=="Much Wider") ti["attacking-width"]="Wider";
+    ti["progress-through"]="Both Flanks";
+    if(ti["crossing-style"]==="Low Crosses") ti["crossing-style"]="Balanced";
+  }
+  if(advOn) ADV_TI.forEach(([k,v,skip])=>{ if(!skip(c) && ti[k]!==v){ti[k]=v;advKeys.add(k);} });
+  let mi=MENT.indexOf(STYLE[si].ment);
+  if(c.level==="fav") mi++; if(c.level==="und") mi--;
+  if(advOn) mi++;
+  mi=Math.max(1,Math.min(5,mi));
+  const ment=MENT[mi];
+  const players=tac.players;
+  if(advOn){
+    players.forEach(p=>{
+      if(p.ip.pos==="GK"){p.ip.role="Ball-Playing Goalkeeper";p.ip.duty="S";p.oop.role="Sweeper Keeper";p.oop.duty="A";}
+      if(/^DC/.test(p.ip.pos) && /^(Centre-Back|No-Nonsense Centre-Back)$/.test(p.ip.role)){p.ip.role="Ball-Playing Centre-Back";p.ip.duty="D";}
+      if(/^D[RL]$/.test(p.ip.pos) && /^(Full-Back|Wing-Back)$/.test(p.ip.role) && c.width!=="wide")
+        p.ip.pi=["Attacking Width: Sit Narrower","Dribbling Direction: Cut Inside With Ball","Passing Risks: Take More Risks","Cross From: Byline"];
+      if(/^(AM[RL]|M[RL])$/.test(p.ip.pos) && /^(Winger|Inside Winger|Inside Forward|Wide Forward|Wide Midfielder)$/.test(p.ip.role))
+        p.ip.pi=["Attacking Width: Stay Wider"];
+    });
+  }
+  const coach=c.coach?COACHES.find(x=>x.id===c.coach):null;
+  const coachKeys=new Set();
+  if(coach){
+    Object.entries(coach.ti).forEach(([k,v])=>{ if(ti[k]!==v){ti[k]=v;coachKeys.add(k);advKeys.delete(k);} });
+    coach.roles.forEach(([pos,role,duty])=>{const p=players.find(x=>x.ip.pos===pos); if(p){p.ip.role=role;p.ip.duty=duty;p.coach=true;}});
+  }
+  const chk=[];
+  const ipA=players.filter(p=>p.ip.duty==="A"&&p.ip.pos!=="GK").length;
+  const oopD=players.filter(p=>p.oop.duty==="D"&&p.oop.pos!=="GK").length;
+  const holders=players.filter(isHolder).length;
+  const nonDef=TI.filter(x=>ti[x[0]]!==DEF[x[0]]).length;
+  const loe=ti["line-of-engagement"], dl=ti["defensive-line"];
+  chk.push(ipA>=6?["warn","c_manyA",{n:ipA}]:["ok","c_balA",{n:ipA}]);
+  if(oopD<4) chk.push(["warn","c_fewD",{n:oopD}]);
+  if(loe==="High Press" && /Lower/.test(dl)) chk.push(holders>=2?["info","c_gapOk",{n:holders}]:["warn","c_gapBad",{}]);
+  if(/Higher/.test(dl)){const sk=players.find(p=>p.oop.pos==="GK").oop.role==="Sweeper Keeper"; chk.push(sk?["info","c_highSK",{}]:["warn","c_highNoSK",{}]);}
+  if(ti["defensive-transition"]==="Counter-Press" && /Higher/.test(ti["tempo"])) chk.push(["info","c_stamina",{}]);
+  if(ti["attacking-width"].includes("Narrower") && !players.some(p=>/Winger|Wing-Back|Wide Midfielder/.test(p.ip.role)||p.ip.pi.some(x=>/Stay Wider/.test(x)))) chk.push(["warn","c_noWidth",{}]);
+  chk.push(nonDef>18?["warn","c_complex",{n:nonDef}]:nonDef<=12?["ok","c_simple",{n:nonDef}]:["ok","c_medium",{n:nonDef}]);
+  if(c.level==="und" && loe==="High Press") chk.push(["info","c_undPress",{}]);
+  if(c.adv && defensive) chk.push(["info","c_advOff",{}]);
+  return {c,F,si,variant,pool,players,ti,advKeys,coachKeys,coach,ment,chk,notes,holders,nonDef,advOn,borrowed};
+}
+
+/* ======================= WIDOK ======================= */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+function renderFormChips(){
+  const cur=(document.querySelector('input[name="form"]:checked')||{}).value||"4231";
+  $("formChips").innerHTML=FORMATIONS.map(f=>`<input type="radio" name="form" id="f-${f.id}" value="${f.id}"${f.id===cur?" checked":""}><label for="f-${f.id}">${esc(formLabel(f))}</label>`).join("");
+}
+renderFormChips();
+
+const svg=$("pitch"), NS="http://www.w3.org/2000/svg";
+function el(n,a,parent){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);(parent||svg).appendChild(e);return e;}
+(function(){
+  for(let i=0;i<10;i++) el("rect",{x:0,y:i*105,width:680,height:105,style:"fill:var("+(i%2?"--pitch-2":"--pitch")+")"});
+  const L={style:"fill:none;stroke:var(--chalk);stroke-width:3"};
+  el("rect",{x:20,y:20,width:640,height:1010,...L}); el("line",{x1:20,y1:525,x2:660,y2:525,...L});
+  el("circle",{cx:340,cy:525,r:62,...L});
+  el("rect",{x:138,y:20,width:404,height:165,...L}); el("rect",{x:138,y:865,width:404,height:165,...L});
+  el("rect",{x:248,y:20,width:184,height:55,...L}); el("rect",{x:248,y:975,width:184,height:55,...L});
+  el("path",{d:"M 278 185 A 62 62 0 0 0 402 185",...L}); el("path",{d:"M 278 865 A 62 62 0 0 1 402 865",...L});
+  const a=el("text",{x:340,y:13,"text-anchor":"middle",style:"fill:var(--chalk);font:500 13px var(--f-mono)"}); a.textContent="↑";
+})();
+const layer=el("g",{});
+let phase="ip", R=null;
+const X=v=>v*6.8, Y=v=>v*10.5;
+function drawPitch(){
+  layer.innerHTML="";
+  R.players.forEach(p=>{
+    const s=phase==="ip"?p.ip:p.oop, xy=POS[s.pos]||[50,50];
+    const g=el("g",{class:"pl"},layer); g.style.transform=`translate(${X(xy[0])}px,${Y(xy[1])}px)`;
+    el("rect",{x:-40,y:-25,width:80,height:50,rx:6,style:`fill:var(--${lineOf(s.pos)});stroke:rgba(0,0,0,.35);stroke-width:2`},g);
+    el("rect",{x:-40,y:15,width:80,height:10,rx:0,style:`fill:var(--d${s.duty})`},g);
+    const ab=(ROLE[s.role]||["?"])[0];
+    const tx=el("text",{y:6,"text-anchor":"middle",style:`fill:#fff;font:700 ${ab.length>3?19:23}px var(--f-display);letter-spacing:.02em`},g); tx.textContent=ab;
+    const lab=el("text",{y:-31,"text-anchor":"middle",style:"fill:#fff;stroke:rgba(10,12,30,.85);stroke-width:4px;paint-order:stroke;stroke-linejoin:round;font:600 18px var(--f-mono)"},g);
+    lab.textContent=s.pos;
+  });
+  $("shapeCap").textContent= phase==="ip" ? t("shapeIP",{f:R.variant.ip}) : t("shapeOOP",{f:R.variant.oop,loe:R.ti["line-of-engagement"]});
+}
+function movePlayers(){
+  const gs=layer.querySelectorAll("g.pl");
+  R.players.forEach((p,i)=>{const s=phase==="ip"?p.ip:p.oop, xy=POS[s.pos]||[50,50]; if(gs[i]) gs[i].style.transform=`translate(${X(xy[0])}px,${Y(xy[1])}px)`;});
+  setTimeout(drawPitch, matchMedia("(prefers-reduced-motion: reduce)").matches?0:620);
+}
+function setPhase(p){ if(p===phase) return; phase=p; $("bIP").setAttribute("aria-pressed",p==="ip"); $("bOOP").setAttribute("aria-pressed",p==="oop"); movePlayers(); }
+$("bIP").addEventListener("click",()=>setPhase("ip"));
+$("bOOP").addEventListener("click",()=>setPhase("oop"));
+
+function roleCell(s,cls){
+  return `<div><span class="ph ${cls}"></span><span class="role">${esc(s.role)}</span><span class="duty ${s.duty}">${DUTY[s.duty]}</span>`+
+    (s.pi.length?`<span class="pis">${s.pi.map(esc).join(" · ")}</span>`:"")+`<span class="desc">${esc(roleDesc(s.role))}</span></div>`;
+}
+function tiList(phaseKey){
+  let out="", last="";
+  TI.filter(x=>x[1]===phaseKey && R.ti[x[0]]!==DEF[x[0]]).forEach(x=>{
+    if(x[2]!==last){ out+=`<div class="grp">${x[2]}</div>`; last=x[2]; }
+    out+=`<div><dt>${x[3]}: <span class="val">${esc(R.ti[x[0]])}</span>${R.advKeys.has(x[0])?`<span class="adv-mark">${esc(t("advMark"))}</span>`:""}${R.coachKeys.has(x[0])?`<span class="coach-mark">${esc(t("coachMark"))}</span>`:""}</dt><dd>${esc(tiExpl(x))}</dd></div>`;
+  });
+  return out||`<div class="untouched">${esc(t("allDefault"))}</div>`;
+}
+function applyStatic(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-i18n]").forEach(e=>{e.textContent=t(e.dataset.i18n);});
+  document.querySelectorAll("[data-i18n-html]").forEach(e=>{e.innerHTML=t(e.dataset.i18nHtml);});
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+  BOOKMARKLET=makeBookmarklet();
+  $("bmLink").setAttribute("href",BOOKMARKLET);
+}
+function render(){
+  R=build(readState());
+  const F=R.F, styleName=t("st_"+R.c.style);
+  $("tName").textContent=`${formLabel(F)} · ${styleName}`;
+  $("tSub").textContent=(R.coach?t("subCoach",{name:R.coach.name})+" · ":"")+t("sub",{si:SI_NAME[R.si],m:R.ment});
+  $("tTags").innerHTML=`<span class="tag"><b>Mentality</b>${R.ment}</span><span class="tag"><b>${esc(t("ip"))}</b>${esc(R.variant.ip)}</span><span class="tag"><b>${esc(t("oop"))}</b>${esc(R.variant.oop)}</span><span class="tag"><b>${esc(t("tagTI"))}</b>${R.nonDef}/27</span>`;
+  $("oopChips").innerHTML=R.pool.map((x,i)=>`<input type="radio" name="oopv" id="ov-${i}" value="${esc(x.oop)}"${x.oop===R.variant.oop?" checked":""}><label for="ov-${i}">${esc(x.oop)}</label>`).join("");
+  const sorted=R.players.slice().sort((a,b)=>(POS[b.ip.pos]||[0,0])[1]-(POS[a.ip.pos]||[0,0])[1]||(POS[a.ip.pos]||[0])[0]-(POS[b.ip.pos]||[0])[0]);
+  $("roles").innerHTML=sorted.map(p=>`<tr><td class="pos"><b style="background:var(--${lineOf(p.ip.pos)})">${p.ip.pos}</b><span>${esc(posName(p.ip.pos))}</span></td><td>${roleCell(p.ip,"ip")}${p.coach?`<span class="pis coach">★ ${esc(t("coachMark"))}: ${esc(R.coach.name)}</span>`:""}<div style="height:6px"></div>${roleCell(p.oop,"oop")}${p.oop.pos!==p.ip.pos?`<span class="desc">${esc(t("oopMove",{p:p.oop.pos}))}</span>`:""}</td></tr>`).join("");
+  $("checks").innerHTML=R.chk.map(([lv,k,pr])=>`<div class="chk ${lv}"><strong>${esc(t(k+"_t",pr))}</strong>${esc(t(k+"_b",pr))}</div>`).join("");
+  $("iIP").innerHTML=`<div><dt>Mentality: <span class="val">${R.ment}</span></dt><dd>${esc(t("mentDD"))}</dd></div>`+tiList("in");
+  $("iOOP").innerHTML=tiList("out");
+  $("untouched").textContent=t("untouched",{n:27-R.nonDef});
+  const why=[]; if(R.coach){why.push(t("w_coach",{name:R.coach.name,desc:R.coach.desc[LANG]}));}
+  why.push(STYLE[R.si].desc[LANG], t("w_map",{s:styleName,w:t("w_"+R.c.width),si:SI_NAME[R.si]}));
+  if(R.c.width==="narrow") why.push(t("y_narrow")); if(R.c.width==="wide") why.push(t("y_wide"));
+  if(R.c.level==="fav") why.push(t("w_fav")); if(R.c.level==="und") why.push(t("w_und"));
+  if(R.advOn) why.push(t("w_adv"));
+  why.push(t("w_shape",{a:R.variant.ip,b:R.variant.oop})+(R.holders>=2?t("w_hold",{n:R.holders}):""));
+  R.notes.forEach(([k,p])=>why.push(t(k,{...p,f:formLabel(F)})));
+  if(R.coach) why.push(t("coachNote"));
+  $("why").innerHTML=why.map(x=>`<li>${esc(x)}</li>`).join("");
+  const watch=STYLE[R.si].watch[LANG].slice(); if(R.advOn) watch.push(t("watchAdv"));
+  $("watch").innerHTML=watch.map(x=>`<li>${esc(x)}</li>`).join("");
+  ["copied","recipeMsg","bmMsg"].forEach(id=>$(id).textContent="");
+  ["fallback","recipeBox","bmBox"].forEach(id=>$(id).hidden=true);
+  drawPitch();
+}
+function fillCoach(){
+  const sel=$("coach"), cur=sel.value;
+  sel.innerHTML=`<option value="">${esc(t("coachNone"))}</option>`+COACHES.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  sel.value=cur;
+}
+function setRadio(name,val){const i=document.querySelector(`input[name="${name}"][value="${val}"]`); if(i) i.checked=true;}
+$("f").addEventListener("change",e=>{
+  if(e.target.id==="coach"){
+    const c=COACHES.find(x=>x.id===e.target.value);
+    if(c){setRadio("form",c.form);setRadio("style",c.style);setRadio("width",c.width);oopChoice=c.oop;}
+    else oopChoice=null;
+  }else{
+    if(["form","style","width"].includes(e.target.name)) $("coach").value="";
+    oopChoice=null;
+  }
+  render(); save();
+});
+$("oopChips").addEventListener("change",e=>{ oopChoice=e.target.value; render(); save(); });
+document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",()=>{LANG=b.dataset.lang; try{localStorage.setItem("fm27lang",LANG);}catch(e){} renderFormChips(); applyStatic(); fillCoach(); render();}));
+
+/* ======================= PRZEPIS + ZAKŁADKA ======================= */
+function recipe(){
+  const v=R.variant;
+  const base= v.src==="template" ? TEMPLATE_BASE : {g:v.si,ip:v.ip,oop:v.oop};
+  const name=(R.coach?`GEN ${R.coach.tag} ${R.F.id==="diamond"?"DIAMOND":R.F.label.split(" ")[0]}${R.advOn?" ADV":""}`:`GEN ${R.F.id==="diamond"?"DIAMOND":R.F.label.split(" ")[0]} ${STYLE_CODE[R.c.style]}${R.advOn?" ADV":""}`).slice(0,30);
+  const r={v:1,name,ment:MENT.indexOf(R.ment)+1,base,
+    ti:Object.fromEntries(TI.map(x=>[x[5],tiValueKey(x[0],R.ti[x[0]])])),
+    p:R.players.map(p=>({in:{pos:p.ip.pos,role:p.ip.role,pi:p.ip.pi.map(x=>PI_KEY[x]).filter(Boolean)},out:{pos:p.oop.pos,role:p.oop.role,pi:[]}}))};
+  return "FM27GEN1:"+btoa(JSON.stringify(r));
+}
+/* Kod zakładki: uruchamiany na tactics.sortitoutsi.net, NIE na tej stronie. */
+async function fm27Build(raw,opts){
+  opts=opts||{};
+  var T=opts.T||{};
+  var R0;
+  try{R0=JSON.parse(atob(String(raw).trim().replace(/^FM27GEN1:/,"")));}catch(e){return T.badRecipe;}
+  var wait=function(ms){return new Promise(function(z){setTimeout(z,ms);});};
+  var J=async function(u,o){for(var a=0;a<6;a++){var r=await fetch(u,o);var j=await r.json().catch(function(){return {};});if(r.status===401)throw new Error(T.login);if(r.status===429||j.error==="rate_limited"){await wait(3000*(a+1));continue;}if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j;}throw new Error(T.rate);};
+  var ALLP=["GK","DR","DL","DC","DCL","DCR","WBR","WBL","DM","DML","DMR","MR","ML","MC","MCL","MCR","AMR","AML","AMC","AMCL","AMCR","STC","STCL","STCR"];
+  var ex=(await J("/api/examples")).filter(function(e){return e.section==="FM27 Presets"&&e.group===R0.base.g;});
+  var t=null;
+  for(var e of ex){var x=(await J("/api/tactic/example?path="+encodeURIComponent(e.path))).tactic;if(x.model.formations.inPossession===R0.base.ip&&x.model.formations.outOfPossession===R0.base.oop){t=x;break;}}
+  if(!t)return T.noBase+R0.base.g+" "+R0.base.ip+" / "+R0.base.oop;
+  var S=t.state,C=t.container,M=t.model,errs=[];
+  var E=async function(op){try{var j=await J("/api/tactic/edit",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({state:S,op:op,container:C})});S=j.state;C=j.container;M=j.model;return true;}catch(err){errs.push(op.type+" "+(op.setting||op.role||op.position||"")+": "+err.message);return false;}};
+  var prog=opts.onProgress||function(){};
+  prog(T.pName);
+  await E({type:"rename",name:R0.name});
+  await E({type:"mentality",value:R0.ment});
+  var ti=0,tn=Object.keys(R0.ti).length;
+  for(var k in R0.ti){ti++;prog(T.pTi+ti+T.of+tn);await E({type:"teamInstruction26",setting:k,value:R0.ti[k]});}
+  for(var ph of ["in","out"]){
+    var key=ph==="in"?"inPossession":"outOfPossession";
+    prog(ph==="in"?T.pIn:T.pOut);
+    for(var guard=0;guard<60;guard++){
+      var cur=M.players.map(function(p){return p.phases[key].position;});
+      var todo=R0.p.map(function(q,i){return i;}).filter(function(i){return cur[i]!==R0.p[i][ph].pos;});
+      if(!todo.length)break;
+      var moved=false;
+      for(var i of todo){var tgt=R0.p[i][ph].pos;if(cur.indexOf(tgt)<0){moved=await E({type:"position26",player:i,phase:ph,position:tgt});if(moved)break;}}
+      if(!moved){var bi=cur.indexOf(R0.p[todo[0]][ph].pos);var free=ALLP.filter(function(f){return f!=="GK"&&cur.indexOf(f)<0;});
+        var ok=false;for(var f of free){ok=await E({type:"position26",player:bi,phase:ph,position:f});if(ok)break;}
+        if(!ok)break;}
+    }
+    for(var n=0;n<R0.p.length;n++){var q=R0.p[n][ph];
+      if(M.players[n].phases[key].role!==q.role)await E({type:"role26",player:n,phase:ph,role:q.role});
+      for(var pi of q.pi){await E({type:"playerInstruction26",player:n,phase:ph,setting:pi[0],value:pi[1]});}}
+  }
+  var bad=[];
+  R0.p.forEach(function(q,n){["in","out"].forEach(function(ph){var a=M.players[n].phases[ph==="in"?"inPossession":"outOfPossession"];if(a.position!==q[ph].pos||a.role!==q[ph].role)bad.push((ph==="in"?T.ip:T.oop)+": "+q[ph].pos+" "+q[ph].role+" ("+T.is+": "+a.position+" "+a.role+")");});});
+  prog(T.pDl);
+  var d;
+  for(var a2=0;a2<6;a2++){d=await fetch("/api/tactic/download",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({state:S,name:R0.name,container:C})});if(d.status!==429)break;await wait(3000*(a2+1));}
+  if(d.status===401)return T.login;
+  if(!d.ok)return T.dlFail+d.status+").";
+  var blob=await d.blob();
+  if(opts.returnBlob)return {blob:blob,errs:errs,bad:bad,model:M};
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=R0.name+".fmf";document.body.appendChild(a);a.click();a.remove();
+  return T.done.replace("{name}",R0.name)+"\n("+M.formations.inPossession+" / "+M.formations.outOfPossession+")\n\n"+T.hint+
+    (bad.length?"\n\n"+T.bad+"\n- "+bad.join("\n- "):"")+
+    (errs.length?"\n\n"+T.skipped+" ("+errs.length+"):\n- "+errs.slice(0,8).join("\n- "):"");
+}
+function fm27Ui(build,T){
+  if(!/sortitoutsi/.test(location.host)){alert(T.notSite);return;}
+  var old=document.getElementById("fm27gen-ui");if(old)old.remove();
+  var w=document.createElement("div");w.id="fm27gen-ui";
+  w.setAttribute("style","position:fixed;z-index:2147483647;top:20px;right:20px;width:400px;max-width:calc(100vw - 40px);background:rgb(26,22,68);color:rgb(238,240,250);border:3px solid rgb(47,211,167);border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.55);font:15px/1.45 system-ui,sans-serif;padding:18px;box-sizing:border-box");
+  w.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin:-18px -18px 12px;padding:10px 18px;background:rgb(22,105,94);border-radius:8px 8px 0 0"><b style="font-size:17px;color:white"></b><button data-x style="border:0;background:none;font-size:26px;line-height:1;cursor:pointer;color:white">×</button></div>'+
+   '<div data-s style="margin-bottom:8px"></div>'+
+   '<textarea data-t style="width:358px;max-width:calc(100vw - 80px);height:84px;box-sizing:border-box;font:12px monospace;border:1px solid rgb(53,47,112);border-radius:6px;padding:8px;color:rgb(238,240,250);background:rgb(14,11,36)"></textarea>'+
+   '<button data-go style="display:block;margin-top:10px;width:358px;max-width:calc(100vw - 80px);padding:12px;border:0;border-radius:8px;background:rgb(47,211,167);color:rgb(5,42,33);font-weight:700;font-size:16px;cursor:pointer"></button>'+
+   '<div data-r style="margin-top:12px;white-space:pre-wrap;font-size:14px"></div>';
+  document.body.appendChild(w);
+  var q=function(a){return w.querySelector("["+a+"]");};
+  w.querySelector("b").textContent=T.title+" · barfly86";q("data-x").title=T.close;q("data-s").innerHTML=T.intro;q("data-t").placeholder=T.ph;q("data-go").textContent=T.btn;
+  q("data-x").onclick=function(){w.remove();};
+  fetch("/api/auth/me").then(function(r){if(r.status===401){q("data-s").textContent=T.login;q("data-s").style.color="rgb(255,210,127)";}}).catch(function(){});
+  try{navigator.clipboard.readText().then(function(x){if(/^\s*FM27GEN1:/.test(x)){q("data-t").value=x.trim();q("data-s").textContent=T.fromClip;}}).catch(function(){});}catch(e){}
+  q("data-go").onclick=async function(){
+    var b=q("data-go"),r=q("data-r"),raw=q("data-t").value;
+    if(!/FM27GEN1:/.test(raw)){r.textContent=T.need;return;}
+    b.disabled=true;b.style.opacity=".6";b.textContent=T.working;
+    try{r.textContent=await build(raw,{T:T,onProgress:function(s){r.textContent=s;}});}catch(e){r.textContent=(e.message===T.login?"":T.err)+e.message;}
+    b.disabled=false;b.style.opacity="1";b.textContent=T.btn;
+  };
+}
+function makeBookmarklet(){
+  return ("javascript:("+fm27Ui.toString()+")("+fm27Build.toString()+","+JSON.stringify(BM_T[LANG])+");void 0")
+    .replace(/\n\s*/g," ")
+    .replace(/[^\x00-\x7f]/g,c=>"\\u"+c.charCodeAt(0).toString(16).padStart(4,"0"))
+    .replace(/%/g,"\\u0025");
+}
+let BOOKMARKLET="";
+
+function asText(){
+  const L=[`${t("txtTitle")}: ${formLabel(R.F)} · ${t("st_"+R.c.style)} (${t("w_"+R.c.width)})`,
+   t("sub",{si:SI_NAME[R.si],m:R.ment}),`${t("ip")}: ${R.variant.ip} | ${t("oop")}: ${R.variant.oop}`,"",`${t("txtRoles")} (${t("ip")} > ${t("oop")}):`];
+  R.players.forEach(p=>L.push(`${p.ip.pos}: ${p.ip.role} (${DUTY[p.ip.duty]})${p.ip.pi.length?" ["+p.ip.pi.join("; ")+"]":""} > ${p.oop.pos}: ${p.oop.role} (${DUTY[p.oop.duty]})`));
+  L.push("","IN POSSESSION:"); TI.filter(x=>x[1]==="in"&&R.ti[x[0]]!==DEF[x[0]]).forEach(x=>L.push(`- ${x[3]}: ${R.ti[x[0]]}`));
+  L.push("","OUT OF POSSESSION:"); TI.filter(x=>x[1]==="out"&&R.ti[x[0]]!==DEF[x[0]]).forEach(x=>L.push(`- ${x[3]}: ${R.ti[x[0]]}`));
+  L.push("",t("txtRest"),"",`${t("h1")} FM27 · ${t("byLabel")} barfly86`);
+  return L.join("\n");
+}
+function copyTo(text,box,msg,okText){
+  box.value=text;
+  const fb=()=>{box.hidden=false;box.focus();box.select();msg.textContent=t("copyFb");};
+  try{navigator.clipboard.writeText(text).then(()=>{box.hidden=true;msg.textContent=okText;},fb);}catch(e){fb();}
+}
+$("copy").addEventListener("click",()=>copyTo(asText(),$("fallback"),$("copied"),t("copied")));
+$("copyRecipe").addEventListener("click",()=>copyTo(recipe(),$("recipeBox"),$("recipeMsg"),t("recipeCopied")));
+$("copyBm").addEventListener("click",()=>copyTo(BOOKMARKLET,$("bmBox"),$("bmMsg"),t("bmCopied")));
+document.querySelector(".sig").addEventListener("click",e=>e.preventDefault());
+$("bmLink").addEventListener("click",e=>{e.preventDefault();$("bmHint").textContent=t("bmClick");});
+
+fillCoach();
+function save(){try{localStorage.setItem("fm27gen2",JSON.stringify({...readState(),oop:oopChoice}));}catch(e){}}
+try{const s=JSON.parse(localStorage.getItem("fm27gen2")||"null");
+  if(s){["form","style","width","level"].forEach(k=>{const i=document.querySelector(`input[name="${k}"][value="${s[k]}"]`); if(i) i.checked=true;});
+    $("adv").checked=!!s.adv; oopChoice=s.oop||null; if(s.coach&&COACHES.some(c=>c.id===s.coach)) $("coach").value=s.coach;}}catch(e){}
+window.__fm27={build,FORMATIONS,MAP,recipe:()=>recipe(),bm:()=>BOOKMARKLET,setLang:l=>{LANG=l;renderFormChips();applyStatic();fillCoach();render();},COACHES,I18N,t};
+applyStatic();
+render();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(drawPitch);
+})();
+</script>
+
+</body>
+</html>
