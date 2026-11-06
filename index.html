@@ -41,6 +41,24 @@ h1 em{font-style:normal;color:var(--accent)}
 .bmc.big{font-size:16px;padding:12px 22px;white-space:nowrap}
 .card.support{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;border:2px solid #ffdd00;background:linear-gradient(120deg,var(--surface),rgba(255,221,0,.08))}
 .card.support > div{min-width:0;flex:1 1 320px}
+.hl-right{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ring{position:relative;width:74px;height:74px;flex:none}
+.ring svg{width:74px;height:74px;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font:700 26px var(--f-display);color:#fff;line-height:1}
+.ring .num small{display:block;font:600 9.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;opacity:.85;margin-top:2px;text-align:center}
+.scorecard{gap:12px}
+.sc-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sc-total{font:700 30px var(--f-display);font-variant-numeric:tabular-nums}
+.sc-total span{font-size:16px;color:var(--muted)}
+.sc-total b{font:600 15px var(--f-body);margin-left:8px;padding:2px 10px;border-radius:999px;color:#111;vertical-align:4px}
+.bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px}
+@media (max-width:700px){.bars{grid-template-columns:minmax(0,1fr)}}
+.bar-h{display:flex;justify-content:space-between;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.bar-h span:last-child{color:var(--muted);font-weight:500}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:5px 0 3px}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .5s}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+.bar-d{font-size:12.5px;color:var(--muted)}
 .hdr-right{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end}
 .lang{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
 .lang button{font:600 14px var(--f-body);letter-spacing:.04em;border:0;background:transparent;color:var(--muted);padding:8px 13px;cursor:pointer}
@@ -74,7 +92,8 @@ dt .coach-mark{font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:
 .adv p{margin:0;font-size:13px;color:var(--muted)}
 
 .result{display:grid;gap:22px;min-width:0}
-.headline{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--band),var(--band-2));border-radius:10px;padding:14px 18px;color:#fff}
+.headline{display:flex;flex-wrap:nowrap;gap:10px 18px;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--band),var(--band-2));border-radius:10px;padding:14px 18px;color:#fff}
+.headline > div:first-child{min-width:0}
 .headline .name{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,3.6vw,36px);line-height:1;text-transform:uppercase;letter-spacing:.02em}
 .headline .sub{font-size:14.5px;opacity:.9}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
@@ -228,8 +247,9 @@ footer .disc{font-size:12px;opacity:.85}
         <div>
           <div class="name" id="tName"></div>
           <div class="sub" id="tSub"></div>
+          <div class="tags" id="tTags" style="margin-top:8px"></div>
         </div>
-        <div class="tags" id="tTags"></div>
+        <div class="ring" id="ring"></div>
       </div>
 
       <div class="board">
@@ -255,6 +275,13 @@ footer .disc{font-size:12px;opacity:.85}
             <tbody id="roles"></tbody>
           </table>
         </div>
+      </div>
+
+      <div class="card scorecard">
+        <div class="sc-top"><h2 data-i18n="scoreH" style="margin:0"></h2><div class="sc-total" id="scTotal"></div></div>
+        <div class="bars" id="scBars"></div>
+        <p class="note" id="scTip"></p>
+        <p class="note" data-i18n="scoreNote"></p>
       </div>
 
       <div>
@@ -607,7 +634,7 @@ const lineOf=p=>p==="GK"?"lGK":/^(D|WB)/.test(p)&&!/^DM/.test(p)?"lD":/^(DM|M)/.
 
 /* ======================= TEKSTY INTERFEJSU ======================= */
 const I18N={
-pl:{supportShort:"Postaw kawę",supportTitle:"Podoba Ci się generator?",supportTxt:"Jeśli pomógł Ci zbudować taktykę, możesz postawić mi kawę. To motywuje do dalszej pracy: aktualizacji pod nowe wersje silnika, kolejnych trenerów i nowych funkcji.",byLabel:"autor",disclaimer:"Nieoficjalne narzędzie fanowskie. Nie jest związane z Sports Interactive, SEGA ani tactics.sortitoutsi.net. Football Manager jest znakiem towarowym jego właścicieli. Style trenerów to interpretacja ich gry w ustawieniach FM27, a nie ich oficjalne taktyki.",fCoach:"0. Szybki wybór: ulubiony trener",coachNone:"— bez trenera, własne ustawienia —",coachHint:"Ustawia formację, styl i szczegóły w duchu trenera. Potem możesz wszystko zmienić.",w_coach:"Inspiracja: {name} – {desc}",coachNote:"To interpretacja stylu trenera w ramach ustawień FM27, a nie jego oficjalna taktyka.",coachMark:"trener",subCoach:"Styl: {name}",eyebrow:"Football Manager 27 · odprawa taktyczna",h1:"Generator taktyk",lead:"Wybierz formację i styl gry. Generator dopasuje role i instrukcje na bazie 90 oficjalnych presetów FM27 od Sports Interactive, wyjaśni każdą decyzję i ostrzeże przed ustawieniami, które się gryzą.",
+pl:{scoreH:"Ocena taktyki",scoreShort:"ocena",sc_coh:"Spójność",sc_fit:"Dopasowanie do silnika",sc_def:"Równowaga w obronie",sc_sim:"Prostota",sc_coh_d:"Ostrzeżenia: {n}",sc_fit_d:"{n} z 11 kluczowych ustawień z testów",sc_def_d:"Attack z piłką: {a} · Defend bez piłki: {d}",sc_sim_d:"Zmienione instrukcje: {n}",g_great:"Świetna",g_good:"Dobra",g_ok:"Przeciętna",g_risky:"Ryzykowna",tipAdv:"Chcesz wyższą ocenę? Włącz tryb zaawansowany – zwykle podnosi dopasowanie do silnika.",scoreNote:"Ocena szacunkowa: liczona z kontroli spójności, podobieństwa do ustawień, które dominowały w testach wersji próbnej FM27, równowagi w obronie i złożoności taktyki. To nie gwarancja wyników – liczą się też Twoi zawodnicy.",supportShort:"Postaw kawę",supportTitle:"Podoba Ci się generator?",supportTxt:"Jeśli pomógł Ci zbudować taktykę, możesz postawić mi kawę. To motywuje do dalszej pracy: aktualizacji pod nowe wersje silnika, kolejnych trenerów i nowych funkcji.",byLabel:"autor",disclaimer:"Nieoficjalne narzędzie fanowskie. Nie jest związane z Sports Interactive, SEGA ani tactics.sortitoutsi.net. Football Manager jest znakiem towarowym jego właścicieli. Style trenerów to interpretacja ich gry w ustawieniach FM27, a nie ich oficjalne taktyki.",fCoach:"0. Szybki wybór: ulubiony trener",coachNone:"— bez trenera, własne ustawienia —",coachHint:"Ustawia formację, styl i szczegóły w duchu trenera. Potem możesz wszystko zmienić.",w_coach:"Inspiracja: {name} – {desc}",coachNote:"To interpretacja stylu trenera w ramach ustawień FM27, a nie jego oficjalna taktyka.",coachMark:"trener",subCoach:"Styl: {name}",eyebrow:"Football Manager 27 · odprawa taktyczna",h1:"Generator taktyk",lead:"Wybierz formację i styl gry. Generator dopasuje role i instrukcje na bazie 90 oficjalnych presetów FM27 od Sports Interactive, wyjaśni każdą decyzję i ostrzeże przed ustawieniami, które się gryzą.",
  fForm:"1. Formacja",fFormSmall:"(z piłką)",fStyle:"2. Styl gry",fWidth:"3. Którędy atakujesz",fLevel:"4. Siła drużyny w lidze",
  st_possession:"Posiadanie piłki",st_press:"Atak i pressing",st_counter:"Kontrataki",st_direct:"Gra bezpośrednia",st_defence:"Mocna obrona",
  w_narrow:"Wąsko, środkiem",w_balanced:"Mieszanie",w_wide:"Skrzydłami",l_fav:"Faworyt",l_mid:"Środek tabeli",l_und:"Słabeusz",diamond:"4-4-2 romb",
@@ -646,7 +673,7 @@ pl:{supportShort:"Postaw kawę",supportTitle:"Podoba Ci się generator?",support
  w_template:"Płaskie 4-4-2 nie ma presetu Sports Interactive. Role pochodzą z szablonu opartego na przetestowanej taktyce WARRIOR, a instrukcje zespołowe ze stylu {si}.",
  watchAdv:"Czy rywal wykorzystuje przestrzeń między pressingiem a obroną – jeśli tak, podnieś Defensive Line o stopień.",
  txtTitle:"TAKTYKA FM27",txtRoles:"ROLE",txtRest:"Pozostałe instrukcje: domyślne."},
-en:{supportShort:"Buy me a coffee",supportTitle:"Enjoying the generator?",supportTxt:"If it helped you build your tactic, you can buy me a coffee. It keeps me going: updates for new match engine versions, more managers and new features.",byLabel:"by",disclaimer:"Unofficial fan tool. Not affiliated with Sports Interactive, SEGA or tactics.sortitoutsi.net. Football Manager is a trademark of its respective owners. Manager styles are interpretations of their play within FM27 settings, not their official tactics.",fCoach:"0. Quick pick: favourite manager",coachNone:"— no manager, my own settings —",coachHint:"Sets formation, style and details in the manager's spirit. You can change anything afterwards.",w_coach:"Inspiration: {name} – {desc}",coachNote:"This is an interpretation of the manager's style within FM27 settings, not his official tactic.",coachMark:"manager",subCoach:"Style: {name}",eyebrow:"Football Manager 27 · tactical briefing",h1:"Tactic Generator",lead:"Pick a formation and a playing style. The generator matches roles and instructions using the 90 official FM27 presets from Sports Interactive, explains every decision and warns you about settings that clash.",
+en:{scoreH:"Tactic rating",scoreShort:"rating",sc_coh:"Consistency",sc_fit:"Match engine fit",sc_def:"Defensive balance",sc_sim:"Simplicity",sc_coh_d:"Warnings: {n}",sc_fit_d:"{n} of 11 key settings from tests",sc_def_d:"Attack in possession: {a} · Defend out of possession: {d}",sc_sim_d:"Changed instructions: {n}",g_great:"Excellent",g_good:"Good",g_ok:"Average",g_risky:"Risky",tipAdv:"Want a higher rating? Turn on advanced mode – it usually raises the match engine fit.",scoreNote:"An estimate based on the consistency check, how closely the tactic matches settings that dominated in FM27 trial tests, defensive balance and complexity. Not a guarantee of results – your players matter too.",supportShort:"Buy me a coffee",supportTitle:"Enjoying the generator?",supportTxt:"If it helped you build your tactic, you can buy me a coffee. It keeps me going: updates for new match engine versions, more managers and new features.",byLabel:"by",disclaimer:"Unofficial fan tool. Not affiliated with Sports Interactive, SEGA or tactics.sortitoutsi.net. Football Manager is a trademark of its respective owners. Manager styles are interpretations of their play within FM27 settings, not their official tactics.",fCoach:"0. Quick pick: favourite manager",coachNone:"— no manager, my own settings —",coachHint:"Sets formation, style and details in the manager's spirit. You can change anything afterwards.",w_coach:"Inspiration: {name} – {desc}",coachNote:"This is an interpretation of the manager's style within FM27 settings, not his official tactic.",coachMark:"manager",subCoach:"Style: {name}",eyebrow:"Football Manager 27 · tactical briefing",h1:"Tactic Generator",lead:"Pick a formation and a playing style. The generator matches roles and instructions using the 90 official FM27 presets from Sports Interactive, explains every decision and warns you about settings that clash.",
  fForm:"1. Formation",fFormSmall:"(in possession)",fStyle:"2. Playing style",fWidth:"3. Where you attack",fLevel:"4. Team strength in the league",
  st_possession:"Possession",st_press:"Attack & pressing",st_counter:"Counter-attacks",st_direct:"Direct play",st_defence:"Solid defence",
  w_narrow:"Narrow, through the middle",w_balanced:"Mixed",w_wide:"Down the wings",l_fav:"Favourite",l_mid:"Mid-table",l_und:"Underdog",diamond:"4-4-2 diamond",
@@ -685,7 +712,7 @@ en:{supportShort:"Buy me a coffee",supportTitle:"Enjoying the generator?",suppor
  w_template:"A flat 4-4-2 has no Sports Interactive preset. Roles come from a template based on the tested WARRIOR tactic, team instructions from {si}.",
  watchAdv:"Whether opponents exploit the space between your press and your defence – if so, raise Defensive Line one step.",
  txtTitle:"FM27 TACTIC",txtRoles:"ROLES",txtRest:"Other instructions: default."},
-es:{supportShort:"Invítame a un café",supportTitle:"¿Te gusta el generador?",supportTxt:"Si te ha ayudado a montar tu táctica, puedes invitarme a un café. Me motiva a seguir: actualizaciones para nuevas versiones del motor, más entrenadores y nuevas funciones.",byLabel:"autor",disclaimer:"Herramienta no oficial creada por aficionados. Sin relación con Sports Interactive, SEGA ni tactics.sortitoutsi.net. Football Manager es una marca de sus respectivos propietarios. Los estilos de los entrenadores son interpretaciones de su juego con los ajustes de FM27, no sus tácticas oficiales.",fCoach:"0. Elección rápida: entrenador favorito",coachNone:"— sin entrenador, mis ajustes —",coachHint:"Ajusta formación, estilo y detalles al estilo del entrenador. Después puedes cambiarlo todo.",w_coach:"Inspiración: {name} – {desc}",coachNote:"Es una interpretación del estilo del entrenador con los ajustes de FM27, no su táctica oficial.",coachMark:"entrenador",subCoach:"Estilo: {name}",eyebrow:"Football Manager 27 · charla táctica",h1:"Generador de tácticas",lead:"Elige una formación y un estilo de juego. El generador ajusta roles e instrucciones a partir de los 90 presets oficiales de FM27 de Sports Interactive, explica cada decisión y te avisa de los ajustes que chocan entre sí.",
+es:{scoreH:"Valoración de la táctica",scoreShort:"nota",sc_coh:"Coherencia",sc_fit:"Encaje con el motor",sc_def:"Equilibrio defensivo",sc_sim:"Sencillez",sc_coh_d:"Avisos: {n}",sc_fit_d:"{n} de 11 ajustes clave de las pruebas",sc_def_d:"Attack con balón: {a} · Defend sin balón: {d}",sc_sim_d:"Instrucciones cambiadas: {n}",g_great:"Excelente",g_good:"Buena",g_ok:"Normal",g_risky:"Arriesgada",tipAdv:"¿Quieres más nota? Activa el modo avanzado: suele mejorar el encaje con el motor.",scoreNote:"Estimación basada en el control de coherencia, el parecido con los ajustes que dominaron en las pruebas de la versión de prueba de FM27, el equilibrio defensivo y la complejidad. No garantiza resultados: tus jugadores también cuentan.",supportShort:"Invítame a un café",supportTitle:"¿Te gusta el generador?",supportTxt:"Si te ha ayudado a montar tu táctica, puedes invitarme a un café. Me motiva a seguir: actualizaciones para nuevas versiones del motor, más entrenadores y nuevas funciones.",byLabel:"autor",disclaimer:"Herramienta no oficial creada por aficionados. Sin relación con Sports Interactive, SEGA ni tactics.sortitoutsi.net. Football Manager es una marca de sus respectivos propietarios. Los estilos de los entrenadores son interpretaciones de su juego con los ajustes de FM27, no sus tácticas oficiales.",fCoach:"0. Elección rápida: entrenador favorito",coachNone:"— sin entrenador, mis ajustes —",coachHint:"Ajusta formación, estilo y detalles al estilo del entrenador. Después puedes cambiarlo todo.",w_coach:"Inspiración: {name} – {desc}",coachNote:"Es una interpretación del estilo del entrenador con los ajustes de FM27, no su táctica oficial.",coachMark:"entrenador",subCoach:"Estilo: {name}",eyebrow:"Football Manager 27 · charla táctica",h1:"Generador de tácticas",lead:"Elige una formación y un estilo de juego. El generador ajusta roles e instrucciones a partir de los 90 presets oficiales de FM27 de Sports Interactive, explica cada decisión y te avisa de los ajustes que chocan entre sí.",
  fForm:"1. Formación",fFormSmall:"(con balón)",fStyle:"2. Estilo de juego",fWidth:"3. Por dónde atacas",fLevel:"4. Nivel del equipo en la liga",
  st_possession:"Posesión",st_press:"Ataque y presión",st_counter:"Contraataques",st_direct:"Juego directo",st_defence:"Defensa sólida",
  w_narrow:"Estrecho, por el centro",w_balanced:"Mixto",w_wide:"Por las bandas",l_fav:"Favorito",l_mid:"Media tabla",l_und:"Modesto",diamond:"4-4-2 rombo",
@@ -724,7 +751,7 @@ es:{supportShort:"Invítame a un café",supportTitle:"¿Te gusta el generador?",
  w_template:"El 4-4-2 en línea no tiene preset de Sports Interactive. Los roles vienen de una plantilla basada en la táctica probada WARRIOR y las instrucciones de equipo, de {si}.",
  watchAdv:"Si el rival aprovecha el espacio entre tu presión y tu defensa: en ese caso, sube Defensive Line un escalón.",
  txtTitle:"TÁCTICA FM27",txtRoles:"ROLES",txtRest:"Resto de instrucciones: por defecto."},
-de:{supportShort:"Spendier mir einen Kaffee",supportTitle:"Gefällt dir der Generator?",supportTxt:"Wenn er dir beim Aufbau deiner Taktik geholfen hat, kannst du mir einen Kaffee spendieren. Das motiviert mich weiterzumachen: Updates für neue Engine-Versionen, weitere Trainer und neue Funktionen.",byLabel:"von",disclaimer:"Inoffizielles Fan-Tool. Keine Verbindung zu Sports Interactive, SEGA oder tactics.sortitoutsi.net. Football Manager ist eine Marke der jeweiligen Inhaber. Trainerstile sind Interpretationen ihres Spiels mit FM27-Einstellungen, nicht ihre offiziellen Taktiken.",fCoach:"0. Schnellwahl: Lieblingstrainer",coachNone:"— kein Trainer, eigene Einstellungen —",coachHint:"Setzt Formation, Stil und Details im Sinne des Trainers. Danach kannst du alles ändern.",w_coach:"Inspiration: {name} – {desc}",coachNote:"Das ist eine Interpretation des Trainerstils mit FM27-Einstellungen, nicht seine offizielle Taktik.",coachMark:"Trainer",subCoach:"Stil: {name}",eyebrow:"Football Manager 27 · Taktikbesprechung",h1:"Taktik-Generator",lead:"Wähle eine Formation und einen Spielstil. Der Generator wählt Rollen und Anweisungen auf Basis der 90 offiziellen FM27-Presets von Sports Interactive, erklärt jede Entscheidung und warnt vor Einstellungen, die sich widersprechen.",
+de:{scoreH:"Taktikbewertung",scoreShort:"Wertung",sc_coh:"Stimmigkeit",sc_fit:"Engine-Passung",sc_def:"Defensive Balance",sc_sim:"Einfachheit",sc_coh_d:"Warnungen: {n}",sc_fit_d:"{n} von 11 Schlüsseleinstellungen aus Tests",sc_def_d:"Attack mit Ball: {a} · Defend gegen den Ball: {d}",sc_sim_d:"Geänderte Anweisungen: {n}",g_great:"Exzellent",g_good:"Gut",g_ok:"Mittel",g_risky:"Riskant",tipAdv:"Höhere Bewertung gewünscht? Schalte den Expertenmodus ein – das verbessert meist die Engine-Passung.",scoreNote:"Schätzung auf Basis der Stimmigkeitsprüfung, der Nähe zu den Einstellungen, die in FM27-Testversionstests dominierten, der defensiven Balance und der Komplexität. Keine Ergebnisgarantie – deine Spieler zählen auch.",supportShort:"Spendier mir einen Kaffee",supportTitle:"Gefällt dir der Generator?",supportTxt:"Wenn er dir beim Aufbau deiner Taktik geholfen hat, kannst du mir einen Kaffee spendieren. Das motiviert mich weiterzumachen: Updates für neue Engine-Versionen, weitere Trainer und neue Funktionen.",byLabel:"von",disclaimer:"Inoffizielles Fan-Tool. Keine Verbindung zu Sports Interactive, SEGA oder tactics.sortitoutsi.net. Football Manager ist eine Marke der jeweiligen Inhaber. Trainerstile sind Interpretationen ihres Spiels mit FM27-Einstellungen, nicht ihre offiziellen Taktiken.",fCoach:"0. Schnellwahl: Lieblingstrainer",coachNone:"— kein Trainer, eigene Einstellungen —",coachHint:"Setzt Formation, Stil und Details im Sinne des Trainers. Danach kannst du alles ändern.",w_coach:"Inspiration: {name} – {desc}",coachNote:"Das ist eine Interpretation des Trainerstils mit FM27-Einstellungen, nicht seine offizielle Taktik.",coachMark:"Trainer",subCoach:"Stil: {name}",eyebrow:"Football Manager 27 · Taktikbesprechung",h1:"Taktik-Generator",lead:"Wähle eine Formation und einen Spielstil. Der Generator wählt Rollen und Anweisungen auf Basis der 90 offiziellen FM27-Presets von Sports Interactive, erklärt jede Entscheidung und warnt vor Einstellungen, die sich widersprechen.",
  fForm:"1. Formation",fFormSmall:"(mit Ball)",fStyle:"2. Spielstil",fWidth:"3. Wo du angreifst",fLevel:"4. Stärke des Teams in der Liga",
  st_possession:"Ballbesitz",st_press:"Angriff & Pressing",st_counter:"Konter",st_direct:"Direktes Spiel",st_defence:"Stabile Defensive",
  w_narrow:"Eng, durch die Mitte",w_balanced:"Gemischt",w_wide:"Über die Flügel",l_fav:"Favorit",l_mid:"Mittelfeld",l_und:"Außenseiter",diamond:"4-4-2 Raute",
@@ -861,7 +888,7 @@ function build(c){
   const holders=players.filter(isHolder).length;
   const nonDef=TI.filter(x=>ti[x[0]]!==DEF[x[0]]).length;
   const loe=ti["line-of-engagement"], dl=ti["defensive-line"];
-  chk.push(ipA>=6?["warn","c_manyA",{n:ipA}]:["ok","c_balA",{n:ipA}]);
+  chk.push(ipA>=6?[holders>=2?"info":"warn","c_manyA",{n:ipA}]:["ok","c_balA",{n:ipA}]);
   if(oopD<4) chk.push(["warn","c_fewD",{n:oopD}]);
   if(loe==="High Press" && /Lower/.test(dl)) chk.push(holders>=2?["info","c_gapOk",{n:holders}]:["warn","c_gapBad",{}]);
   if(/Higher/.test(dl)){const sk=players.find(p=>p.oop.pos==="GK").oop.role==="Sweeper Keeper"; chk.push(sk?["info","c_highSK",{}]:["warn","c_highNoSK",{}]);}
@@ -870,7 +897,18 @@ function build(c){
   chk.push(nonDef>18?["warn","c_complex",{n:nonDef}]:nonDef<=12?["ok","c_simple",{n:nonDef}]:["ok","c_medium",{n:nonDef}]);
   if(c.level==="und" && loe==="High Press") chk.push(["info","c_undPress",{}]);
   if(c.adv && defensive) chk.push(["info","c_advOff",{}]);
-  return {c,F,si,variant,pool,players,ti,advKeys,coachKeys,coach,ment,chk,notes,holders,nonDef,advOn,borrowed};
+  /* Ocena 0-100 */
+  const META={"tempo":"Much Higher","attacking-width":"Much Narrower","dribbling":"Encourage","shots-from-distance":"Discourage","crossing-style":"Low Crosses","defensive-transition":"Counter-Press","line-of-engagement":"High Press","trigger-press":"Much More Often","tackling":"Get Stuck In","prevent-short-gk-distribution":"Yes","cross-engagement":"Invite Crosses"};
+  const warns=chk.filter(x=>x[0]==="warn").length;
+  const metaHits=Object.entries(META).filter(([k,v])=>ti[k]===v).length;
+  const mentPts=[0,0,0,1,3,4,5][MENT.indexOf(ment)];
+  const sCoh=Math.max(0,30-10*warns);
+  const sFit=Math.round(25*metaHits/11+(holders>=2?5:0)+mentPts);
+  const ipE=holders>=2?ipA-2:ipA;
+  const sDef=(ipE<=4?10:ipE===5?7:ipE===6?4:0)+(oopD>=6?10:oopD===5?8:oopD===4?5:0);
+  const sSim=nonDef<=12?15:nonDef<=15?12:nonDef<=18?9:nonDef<=21?5:2;
+  const score={total:sCoh+sFit+sDef+sSim,parts:[["sc_coh",sCoh,30,{n:warns}],["sc_fit",sFit,35,{n:metaHits}],["sc_def",sDef,20,{a:ipA,d:oopD}],["sc_sim",sSim,15,{n:nonDef}]]};
+  return {c,F,si,variant,pool,players,ti,advKeys,coachKeys,coach,ment,chk,notes,holders,nonDef,advOn,borrowed,score};
 }
 
 /* ======================= WIDOK ======================= */
@@ -949,6 +987,15 @@ function render(){
   $("oopChips").innerHTML=R.pool.map((x,i)=>`<input type="radio" name="oopv" id="ov-${i}" value="${esc(x.oop)}"${x.oop===R.variant.oop?" checked":""}><label for="ov-${i}">${esc(x.oop)}</label>`).join("");
   const sorted=R.players.slice().sort((a,b)=>(POS[b.ip.pos]||[0,0])[1]-(POS[a.ip.pos]||[0,0])[1]||(POS[a.ip.pos]||[0])[0]-(POS[b.ip.pos]||[0])[0]);
   $("roles").innerHTML=sorted.map(p=>`<tr><td class="pos"><b style="background:var(--${lineOf(p.ip.pos)})">${p.ip.pos}</b><span>${esc(posName(p.ip.pos))}</span></td><td>${roleCell(p.ip,"ip")}${p.coach?`<span class="pis coach">★ ${esc(t("coachMark"))}: ${esc(R.coach.name)}</span>`:""}<div style="height:6px"></div>${roleCell(p.oop,"oop")}${p.oop.pos!==p.ip.pos?`<span class="desc">${esc(t("oopMove",{p:p.oop.pos}))}</span>`:""}</td></tr>`).join("");
+  const sc=R.score, g=sc.total>=85?["g_great","var(--accent)"]:sc.total>=70?["g_good","#b6e35a"]:sc.total>=50?["g_ok","var(--oop)"]:["g_risky","var(--dA)"];
+  const C=2*Math.PI*31, off=C*(1-sc.total/100);
+  $("ring").innerHTML=`<svg viewBox="0 0 74 74" aria-hidden="true"><circle cx="37" cy="37" r="31" fill="rgba(0,0,0,.22)" stroke="rgba(255,255,255,.18)" stroke-width="7"/><circle cx="37" cy="37" r="31" fill="none" stroke="${g[1]}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><div class="num"><span>${sc.total}<small>${esc(t("scoreShort"))}</small></span></div>`;
+  $("ring").setAttribute("aria-label",`${t("scoreH")}: ${sc.total}/100`);
+  $("scTotal").innerHTML=`${sc.total}<span>/100</span><b style="background:${g[1]}">${esc(t(g[0]))}</b>`;
+  const barCol=(v,m)=>v/m>=.8?"var(--accent)":v/m>=.5?"#b6e35a":v/m>=.3?"var(--oop)":"var(--dA)";
+  $("scBars").innerHTML=sc.parts.map(([k,v,m,pr])=>`<div><div class="bar-h"><span>${esc(t(k))}</span><span>${v}/${m}</span></div><div class="bar"><i style="width:${(100*v/m).toFixed(0)}%;background:${barCol(v,m)}"></i></div><div class="bar-d">${esc(t(k+"_d",pr))}</div></div>`).join("");
+  $("scTip").textContent=(!R.advOn&&!DEFENSIVE_SI.includes(R.si)&&sc.parts[1][1]<25)?t("tipAdv"):"";
+  $("scTip").hidden=!$("scTip").textContent;
   $("checks").innerHTML=R.chk.map(([lv,k,pr])=>`<div class="chk ${lv}"><strong>${esc(t(k+"_t",pr))}</strong>${esc(t(k+"_b",pr))}</div>`).join("");
   $("iIP").innerHTML=`<div><dt>Mentality: <span class="val">${R.ment}</span></dt><dd>${esc(t("mentDD"))}</dd></div>`+tiList("in");
   $("iOOP").innerHTML=tiList("out");
@@ -1089,7 +1136,7 @@ function asText(){
   R.players.forEach(p=>L.push(`${p.ip.pos}: ${p.ip.role} (${DUTY[p.ip.duty]})${p.ip.pi.length?" ["+p.ip.pi.join("; ")+"]":""} > ${p.oop.pos}: ${p.oop.role} (${DUTY[p.oop.duty]})`));
   L.push("","IN POSSESSION:"); TI.filter(x=>x[1]==="in"&&R.ti[x[0]]!==DEF[x[0]]).forEach(x=>L.push(`- ${x[3]}: ${R.ti[x[0]]}`));
   L.push("","OUT OF POSSESSION:"); TI.filter(x=>x[1]==="out"&&R.ti[x[0]]!==DEF[x[0]]).forEach(x=>L.push(`- ${x[3]}: ${R.ti[x[0]]}`));
-  L.push("",t("txtRest"),"",`${t("h1")} FM27 · ${t("byLabel")} barfly86`);
+  L.push("",t("txtRest"),`${t("scoreH")}: ${R.score.total}/100`,"",`${t("h1")} FM27 · ${t("byLabel")} barfly86`);
   return L.join("\n");
 }
 function copyTo(text,box,msg,okText){
