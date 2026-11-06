@@ -4,7 +4,6 @@
 **A tactic generator for Football Manager 27 built for players who don't want to spend hours in the tactics screen.**
 Pick a formation and a playing style, or just choose your favourite manager, and get a complete FM27 tactic: roles for every player in and out of possession, team instructions, a consistency check and a ready-to-load `.fmf` file.
 
-🌐 **Live:** _add your URL here (e.g. GitHub Pages / your domain)_
 ☕ **Support the project:** [buymeacoffee.com/barfly86](https://buymeacoffee.com/barfly86)
 
 Available in **English, Polish, Spanish and German**.
