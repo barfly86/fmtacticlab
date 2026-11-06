@@ -1,8 +1,10 @@
-[README.md](https://github.com/user-attachments/files/34482838/README.md)
+[README.md](https://github.com/user-attachments/files/34487608/README.md)
 # FM27 Tactic Generator
 
 **A tactic generator for Football Manager 27 built for players who don't want to spend hours in the tactics screen.**
 Pick a formation and a playing style, or just choose your favourite manager, and get a complete FM27 tactic: roles for every player in and out of possession, team instructions, a consistency check and a ready-to-load `.fmf` file.
+
+🌐 **Live:** https://fmtacticlab.netlify.app
 
 ☕ **Support the project:** [buymeacoffee.com/barfly86](https://buymeacoffee.com/barfly86)
 
@@ -14,9 +16,10 @@ Available in **English, Polish, Spanish and German**.
 
 - **Formation + style in a few clicks.** 10 formations (4-2-3-1, 4-3-3, 4-4-2, 4-2-4, 4-2-2-2, 4-4-2 diamond, 3-4-3, 3-5-2, 5-2-1-2, 3-4-2-1), 5 playing styles (possession, attack & pressing, counter-attacks, direct play, solid defence), where you attack (narrow / mixed / wide) and how strong your team is.
 - **Built on the official presets.** Every tactic starts from the 90 official FM27 presets by Sports Interactive, so it fits the match engine.
-- **Quick pick: favourite manager.** 15 manager-inspired setups (Guardiola, Slot, Amorim, De Zerbi, Simeone, Gasperini, Kovač, Glasner, Iraola, Hoeneß, Luis Enrique, Ancelotti, Mourinho, Fonseca, Fàbregas) with their signature roles and instructions.
+- **Quick pick: favourite manager.** 20 manager-inspired setups (Guardiola, Arteta, Slot, Flick, Kompany, Luis Enrique, Amorim, De Zerbi, Emery, Simeone, Gasperini, Kovač, Glasner, Iraola, Hoeneß, Ancelotti, Mourinho, Fonseca, Fàbregas and Sir Alex Ferguson) with their signature roles and instructions.
 - **Both phases of play.** An interactive pitch that switches between the in-possession and out-of-possession shape, with every role, duty and player instruction.
 - **Consistency check.** Warnings about settings that clash: too many Attack duties, a gap between the press and the defensive line, a high line without a Sweeper Keeper, no width, tactic complexity and its effect on Tactical Effectiveness.
+- **Tactic rating 0–100.** A transparent score made of four parts: consistency, match engine fit, defensive balance and simplicity.
 - **Explained decisions.** Every role and instruction comes with a short explanation, plus a "what to watch in the first matches" list.
 - **Advanced mode (optional).** Adds settings that dominated in tests of the FM27 trial version. These may stop working after a match engine update.
 - **`.fmf` file.** Generates a recipe that a bookmark turns into a tactic file you can load in the game.
